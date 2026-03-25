@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Layout } from '../components/Layout';
 import { fetchExternalNews } from '../services/newsService';
 import { News } from '../types';
-import { Bell, Calendar, ExternalLink } from 'lucide-react';
+import { Calendar } from 'lucide-react';
 
 export const NotificationsPage: React.FC = () => {
   const [news, setNews] = useState<News[]>([]);
@@ -24,46 +24,45 @@ export const NotificationsPage: React.FC = () => {
 
   return (
     <Layout title="Notícias" showBack backTo="/">
-      <div className="px-4 pt-6 space-y-6 pb-12">
+      <div className="px-4 pt-6 space-y-4 pb-12">
         {loading ? (
-          <div className="flex justify-center py-12">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+          <div className="space-y-4">
+            {[1, 2, 3, 4, 5, 6, 7, 8].map(i => (
+              <div key={i} className="h-24 bg-gray-100 rounded-2xl animate-pulse" />
+            ))}
           </div>
         ) : (
           <>
-            {news.map((item) => (
-              <div key={item.id} className="bg-white rounded-3xl overflow-hidden shadow-sm border border-gray-100 flex flex-col">
+            {news.slice(0, 8).map((item) => (
+              <a 
+                key={item.id} 
+                href={item.link || '#'} 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="flex gap-4 bg-white p-3 rounded-2xl border border-gray-100 shadow-sm active:scale-[0.98] transition-all"
+              >
                 {item.photo && (
-                  <a href={item.link || '#'} target="_blank" rel="noopener noreferrer" className="aspect-video w-full bg-gray-100 block">
+                  <div className="w-24 h-24 rounded-xl overflow-hidden flex-shrink-0 bg-gray-100">
                     <img 
                       src={item.photo} 
                       alt={item.title} 
-                      className="w-full h-full object-cover"
-                      referrerPolicy="no-referrer"
+                      className="w-full h-full object-cover" 
+                      referrerPolicy="no-referrer" 
                     />
-                  </a>
+                  </div>
                 )}
-                <div className="p-5">
-                  <div className="flex items-center gap-2 text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-2">
+                <div className="flex-1 min-w-0 flex flex-col justify-center">
+                  <div className="flex items-center gap-2 text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-1">
                     <Calendar className="w-3 h-3" /> {item.date}
                   </div>
-                  <a href={item.link || '#'} target="_blank" rel="noopener noreferrer" className="block hover:text-blue-600 transition-colors">
-                    <h3 className="text-lg font-bold text-gray-900 leading-tight mb-3">{item.title}</h3>
-                  </a>
-                  <p className="text-gray-600 text-sm leading-relaxed mb-4 line-clamp-3">{item.content}</p>
-                  
-                  {item.link && (
-                    <a 
-                      href={item.link} 
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-2 text-blue-600 text-sm font-bold hover:underline"
-                    >
-                      Ler notícia completa <ExternalLink className="w-4 h-4" />
-                    </a>
-                  )}
+                  <h3 className="text-sm font-bold text-gray-900 line-clamp-3 leading-snug mb-1">
+                    {item.title}
+                  </h3>
+                  <p className="text-xs text-gray-500 line-clamp-2 leading-relaxed">
+                    {item.content}
+                  </p>
                 </div>
-              </div>
+              </a>
             ))}
             {news.length === 0 && (
               <div className="text-center py-20 text-gray-400">
