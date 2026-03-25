@@ -128,6 +128,18 @@
         "appLogo": { "type": "string" },
         "appName": { "type": "string" }
       }
+    },
+    "Announcement": {
+      "title": "Announcement",
+      "description": "Pop-up announcement shown on app start.",
+      "type": "object",
+      "properties": {
+        "imageUrl": { "type": "string" },
+        "link": { "type": "string" },
+        "active": { "type": "boolean" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["imageUrl"]
     }
   },
   "firestore": {
@@ -140,6 +152,7 @@
     "/users/{userId}": { "schema": "User", "description": "User profiles" },
     "/notifications/{notificationId}": { "schema": "Notification", "description": "Push notifications" },
     "/checkins/{checkinId}": { "schema": "CheckIn", "description": "User check-ins" },
-    "/settings/{settingId}": { "schema": "Settings", "description": "Global settings" }
+    "/settings/{settingId}": { "schema": "Settings", "description": "Global settings" },
+    "/announcements/{announcementId}": { "schema": "Announcement", "description": "App announcements" }
   }
 }

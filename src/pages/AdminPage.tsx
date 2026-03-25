@@ -17,10 +17,12 @@ import {
   updateBannerStatus,
   deleteBanner,
   getAppSettings,
-  updateAppSettings
+  updateAppSettings,
+  getActiveAnnouncement,
+  updateAnnouncement
 } from '../services/firestore';
-import { Category, Business, Banner, AppSettings } from '../types';
-import { Plus, Send, Building, Bell, CheckCircle, Trash2, ShieldAlert, ShieldCheck, Grid, Image as ImageIcon, Edit2, X, MapPin, Upload, Eraser, Search, ChevronRight, RefreshCw, Settings, Save } from 'lucide-react';
+import { Category, Business, Banner, AppSettings, Announcement } from '../types';
+import { Plus, Send, Building, Bell, CheckCircle, Trash2, ShieldAlert, ShieldCheck, Grid, Image as ImageIcon, Edit2, X, MapPin, Upload, Eraser, Search, ChevronRight, RefreshCw, Settings, Save, Megaphone } from 'lucide-react';
 import { db } from '../lib/firebase';
 import { collection, deleteDoc, getDocs, doc, setDoc } from 'firebase/firestore';
 import { seedDatabase } from '../lib/seed';
@@ -40,6 +42,12 @@ export const AdminPage: React.FC = () => {
     appName: 'Guia Cruz'
   });
   const [savingSettings, setSavingSettings] = useState(false);
+  const [announcementForm, setAnnouncementForm] = useState<Omit<Announcement, 'id' | 'updatedAt'>>({
+    imageUrl: '',
+    link: '',
+    active: false
+  });
+  const [savingAnnouncement, setSavingAnnouncement] = useState(false);
 
   // Category Form State
   const [catForm, setCatForm] = useState({
@@ -78,16 +86,24 @@ export const AdminPage: React.FC = () => {
 
   const fetchData = async () => {
     setLoading(true);
-    const [cats, bizs, bans, settings] = await Promise.all([
+    const [cats, bizs, bans, settings, activeAnn] = await Promise.all([
       getCategories(), 
       getAllBusinesses(),
       getAllBanners(),
-      getAppSettings()
+      getAppSettings(),
+      getActiveAnnouncement()
     ]);
     setCategories(cats);
     setBusinesses(bizs);
     setBanners(bans);
     if (settings) setAppSettings(settings);
+    if (activeAnn) {
+      setAnnouncementForm({
+        imageUrl: activeAnn.imageUrl,
+        link: activeAnn.link || '',
+        active: activeAnn.active
+      });
+    }
     setLoading(false);
   };
 
@@ -130,7 +146,7 @@ export const AdminPage: React.FC = () => {
     });
   };
 
-  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>, type: 'category' | 'business' | 'banner' | 'logo') => {
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>, type: 'category' | 'business' | 'banner' | 'logo' | 'announcement') => {
     const file = e.target.files?.[0];
     if (!file) return;
 
@@ -150,9 +166,26 @@ export const AdminPage: React.FC = () => {
         setBannerForm({ ...bannerForm, imageUrl: base64 });
       } else if (type === 'logo') {
         setAppSettings({ ...appSettings, appLogo: base64 });
+      } else if (type === 'announcement') {
+        setAnnouncementForm({ ...announcementForm, imageUrl: base64 });
       }
     } catch (error) {
       console.error('Error converting file:', error);
+    }
+  };
+
+  const handleSaveAnnouncement = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSavingAnnouncement(true);
+    try {
+      await updateAnnouncement(announcementForm);
+      setSuccess('Anúncio atualizado com sucesso!');
+      setTimeout(() => setSuccess(null), 3000);
+    } catch (error) {
+      console.error('Error saving announcement:', error);
+      alert('Erro ao salvar anúncio.');
+    } finally {
+      setSavingAnnouncement(false);
     }
   };
 
@@ -427,6 +460,76 @@ export const AdminPage: React.FC = () => {
             >
               {savingSettings ? <RefreshCw className="w-5 h-5 animate-spin" /> : <Save className="w-5 h-5" />}
               Salvar Configurações
+            </button>
+          </form>
+        </section>
+
+        {/* Announcement Modal Settings */}
+        <section className="bg-white rounded-3xl p-6 shadow-sm border border-gray-100">
+          <h2 className="text-lg font-bold text-gray-900 mb-6 flex items-center gap-2">
+            <Megaphone className="w-5 h-5 text-orange-600" /> Anúncio Pop-up (Inicial)
+          </h2>
+          <form onSubmit={handleSaveAnnouncement} className="space-y-4">
+            <div className="flex items-center justify-between p-4 bg-gray-50 rounded-2xl mb-4">
+              <div className="flex flex-col">
+                <span className="text-sm font-bold text-gray-700">Ativar Anúncio</span>
+                <span className="text-xs text-gray-500">Mostrar pop-up ao abrir o app</span>
+              </div>
+              <button
+                type="button"
+                onClick={() => setAnnouncementForm({...announcementForm, active: !announcementForm.active})}
+                className={cn(
+                  "w-12 h-6 rounded-full transition-colors relative",
+                  announcementForm.active ? "bg-orange-600" : "bg-gray-300"
+                )}
+              >
+                <div className={cn(
+                  "absolute top-1 w-4 h-4 bg-white rounded-full transition-all",
+                  announcementForm.active ? "right-1" : "left-1"
+                )} />
+              </button>
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-xs font-bold text-gray-400 uppercase tracking-wider ml-1">Imagem do Anúncio (1:1)</label>
+              <div className="flex gap-2">
+                <input 
+                  type="text" 
+                  placeholder="URL da Imagem (1080x1080 recomendado)" 
+                  value={announcementForm.imageUrl}
+                  onChange={e => setAnnouncementForm({...announcementForm, imageUrl: e.target.value})}
+                  className="flex-1 bg-gray-50 border-none rounded-xl p-4 text-sm focus:ring-2 focus:ring-orange-500"
+                />
+                <label className="bg-gray-100 p-4 rounded-xl cursor-pointer hover:bg-gray-200 transition-colors">
+                  <Upload className="w-5 h-5 text-gray-500" />
+                  <input type="file" accept="image/*" className="hidden" onChange={e => handleFileChange(e, 'announcement')} />
+                </label>
+              </div>
+              {announcementForm.imageUrl && (
+                <div className="mt-2 p-4 bg-gray-50 rounded-2xl flex justify-center border border-gray-100">
+                  <img src={announcementForm.imageUrl} alt="Announcement Preview" className="w-32 h-32 object-cover rounded-xl" referrerPolicy="no-referrer" />
+                </div>
+              )}
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-xs font-bold text-gray-400 uppercase tracking-wider ml-1">Link de Redirecionamento (Opcional)</label>
+              <input 
+                type="text" 
+                value={announcementForm.link}
+                onChange={e => setAnnouncementForm({...announcementForm, link: e.target.value})}
+                className="w-full bg-gray-50 border-none rounded-xl p-4 text-sm focus:ring-2 focus:ring-orange-500"
+                placeholder="Ex: https://guiacruz.com/promocao"
+              />
+            </div>
+
+            <button 
+              type="submit"
+              disabled={savingAnnouncement}
+              className="w-full bg-orange-600 text-white py-4 rounded-2xl font-bold flex items-center justify-center gap-2 active:scale-95 transition-all disabled:opacity-50"
+            >
+              {savingAnnouncement ? <RefreshCw className="w-5 h-5 animate-spin" /> : <Save className="w-5 h-5" />}
+              Salvar Anúncio
             </button>
           </form>
         </section>

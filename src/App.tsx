@@ -2,6 +2,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './hooks/useAuth';
 import { Suspense, lazy, useEffect } from 'react';
 import { seedDatabase } from './lib/seed';
+import { AnnouncementModal } from './components/AnnouncementModal';
 
 // Lazy load pages for better performance
 const Home = lazy(() => import('./pages/Home').then(m => ({ default: m.Home })));
@@ -28,6 +29,7 @@ export default function App() {
 
   return (
     <AuthProvider>
+      <AnnouncementModal />
       <Router>
         <Suspense fallback={<LoadingFallback />}>
           <Routes>

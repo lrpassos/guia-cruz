@@ -16,7 +16,7 @@ import {
   serverTimestamp
 } from 'firebase/firestore';
 import { db, auth } from '../lib/firebase';
-import { Category, Business, Review, Coupon, News, Banner, CheckIn, Notification as AppNotification, AppSettings } from '../types';
+import { Category, Business, Review, Coupon, News, Banner, CheckIn, Notification as AppNotification, AppSettings, Announcement } from '../types';
 import { handleFirestoreError, OperationType } from '../lib/firestore-errors';
 
 // Simple in-memory cache
@@ -380,6 +380,34 @@ export const updateAppSettings = async (settings: AppSettings) => {
   try {
     const docRef = doc(db, 'settings', 'global');
     return await setDoc(docRef, settings, { merge: true });
+  } catch (error) {
+    handleFirestoreError(error, OperationType.UPDATE, path);
+  }
+};
+
+// Announcements
+export const getActiveAnnouncement = async (): Promise<Announcement | null> => {
+  const path = 'announcements';
+  try {
+    const q = query(collection(db, path), where('active', '==', true), limit(1));
+    const snapshot = await getDocs(q);
+    if (snapshot.empty) return null;
+    const doc = snapshot.docs[0];
+    return { id: doc.id, ...doc.data() } as Announcement;
+  } catch (error) {
+    handleFirestoreError(error, OperationType.GET, path);
+    return null;
+  }
+};
+
+export const updateAnnouncement = async (announcement: Omit<Announcement, 'id' | 'updatedAt'>) => {
+  const path = 'announcements/current';
+  try {
+    const docRef = doc(db, 'announcements', 'current');
+    return await setDoc(docRef, {
+      ...announcement,
+      updatedAt: new Date().toISOString()
+    }, { merge: true });
   } catch (error) {
     handleFirestoreError(error, OperationType.UPDATE, path);
   }

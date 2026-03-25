@@ -90,3 +90,11 @@ export interface AppSettings {
   appLogo?: string;
   appName?: string;
 }
+
+export interface Announcement {
+  id: string;
+  imageUrl: string;
+  link?: string;
+  active: boolean;
+  updatedAt: string;
+}
