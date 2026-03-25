@@ -1,7 +1,19 @@
 import { GoogleGenAI, Type } from "@google/genai";
 import { News } from "../types";
 
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY! });
+let aiInstance: GoogleGenAI | null = null;
+
+const getAI = () => {
+  if (!aiInstance) {
+    const apiKey = process.env.GEMINI_API_KEY;
+    if (!apiKey) {
+      console.warn("GEMINI_API_KEY is missing. News service will be disabled.");
+      return null;
+    }
+    aiInstance = new GoogleGenAI({ apiKey });
+  }
+  return aiInstance;
+};
 
 let newsCache: { data: News[], timestamp: number } | null = null;
 const CACHE_DURATION = 1000 * 60 * 30; // 30 minutes
@@ -11,6 +23,9 @@ export const fetchExternalNews = async (): Promise<News[]> => {
   if (newsCache && (Date.now() - newsCache.timestamp < CACHE_DURATION)) {
     return newsCache.data;
   }
+
+  const ai = getAI();
+  if (!ai) return newsCache?.data || [];
 
   try {
     const response = await ai.models.generateContent({
