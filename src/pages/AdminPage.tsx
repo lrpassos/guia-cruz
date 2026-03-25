@@ -500,9 +500,37 @@ export const AdminPage: React.FC = () => {
               type="text" 
               placeholder="Link do Google Maps" 
               value={bizForm.mapsUrl}
-              onChange={e => setBizForm({...bizForm, mapsUrl: e.target.value})}
+              onChange={e => {
+                const url = e.target.value;
+                setBizForm({...bizForm, mapsUrl: url});
+                const match = url.match(/@(-?\d+\.\d+),(-?\d+\.\d+)/) || url.match(/ll=(-?\d+\.\d+),(-?\d+\.\d+)/);
+                if (match) {
+                  setBizForm(prev => ({...prev, mapsUrl: url, lat: parseFloat(match[1]), lng: parseFloat(match[2])}));
+                }
+              }}
               className="w-full bg-gray-50 border-none rounded-xl p-4 text-sm"
             />
+            <p className="text-[10px] text-gray-400 px-1 -mt-2">
+              Dica: Use o link completo do navegador para preencher as coordenadas automaticamente. Links curtos (maps.app.goo.gl) não contêm coordenadas.
+            </p>
+            <div className="grid grid-cols-2 gap-4">
+              <input 
+                type="number" 
+                step="any"
+                placeholder="Latitude" 
+                value={bizForm.lat || ''}
+                onChange={e => setBizForm({...bizForm, lat: parseFloat(e.target.value)})}
+                className="w-full bg-gray-50 border-none rounded-xl p-4 text-sm"
+              />
+              <input 
+                type="number" 
+                step="any"
+                placeholder="Longitude" 
+                value={bizForm.lng || ''}
+                onChange={e => setBizForm({...bizForm, lng: parseFloat(e.target.value)})}
+                className="w-full bg-gray-50 border-none rounded-xl p-4 text-sm"
+              />
+            </div>
             <div className="grid grid-cols-2 gap-4">
               <input 
                 type="text" 

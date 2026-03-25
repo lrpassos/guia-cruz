@@ -294,12 +294,49 @@ export const EditBusinessPage: React.FC = () => {
 
             <div className="space-y-2">
               <label className="text-xs font-bold text-gray-400 uppercase tracking-wider ml-1">Link Google Maps</label>
-              <input 
-                type="text" 
-                value={bizForm.mapsUrl}
-                onChange={e => setBizForm({...bizForm, mapsUrl: e.target.value})}
-                className="w-full bg-gray-50 border-none rounded-xl p-4 text-sm focus:ring-2 focus:ring-blue-500"
-              />
+              <div className="flex gap-2">
+                <input 
+                  type="text" 
+                  value={bizForm.mapsUrl}
+                  onChange={e => {
+                    const url = e.target.value;
+                    setBizForm({...bizForm, mapsUrl: url});
+                    // Try to parse lat/lng from URL (Full URL format)
+                    const match = url.match(/@(-?\d+\.\d+),(-?\d+\.\d+)/) || url.match(/ll=(-?\d+\.\d+),(-?\d+\.\d+)/);
+                    if (match) {
+                      setBizForm(prev => ({...prev, mapsUrl: url, lat: parseFloat(match[1]), lng: parseFloat(match[2])}));
+                    }
+                  }}
+                  className="flex-1 bg-gray-50 border-none rounded-xl p-4 text-sm focus:ring-2 focus:ring-blue-500"
+                  placeholder="Cole o link do Google Maps aqui"
+                />
+              </div>
+              <p className="text-[10px] text-gray-400 px-1">
+                Dica: Use o link completo do navegador para preencher as coordenadas automaticamente. Links curtos (maps.app.goo.gl) não contêm coordenadas.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <label className="text-xs font-bold text-gray-400 uppercase tracking-wider ml-1">Latitude</label>
+                <input 
+                  type="number" 
+                  step="any"
+                  value={bizForm.lat}
+                  onChange={e => setBizForm({...bizForm, lat: parseFloat(e.target.value)})}
+                  className="w-full bg-gray-50 border-none rounded-xl p-4 text-sm focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-xs font-bold text-gray-400 uppercase tracking-wider ml-1">Longitude</label>
+                <input 
+                  type="number" 
+                  step="any"
+                  value={bizForm.lng}
+                  onChange={e => setBizForm({...bizForm, lng: parseFloat(e.target.value)})}
+                  className="w-full bg-gray-50 border-none rounded-xl p-4 text-sm focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
             </div>
 
             <button 

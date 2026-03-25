@@ -229,15 +229,25 @@ export const BusinessPage: React.FC = () => {
           <MapPin className="w-5 h-5 text-gray-400" /> Localização
         </h3>
         <p className="text-gray-600 text-sm mb-4">{business.address}</p>
-        <div className="h-48 bg-gray-100 rounded-2xl overflow-hidden relative">
-          <img 
-            src={`https://maps.googleapis.com/maps/api/staticmap?center=${business.lat},${business.lng}&zoom=15&size=400x200&markers=color:red%7C${business.lat},${business.lng}&key=YOUR_API_KEY`} 
-            alt="Map"
-            className="w-full h-full object-cover"
-            referrerPolicy="no-referrer"
-          />
+        <div className="h-64 bg-gray-100 rounded-2xl overflow-hidden relative">
+          <iframe
+            width="100%"
+            height="100%"
+            style={{ border: 0 }}
+            loading="lazy"
+            allowFullScreen
+            referrerPolicy="no-referrer-when-downgrade"
+            src={`https://www.google.com/maps/embed/v1/place?key=YOUR_API_KEY&q=${business.lat && business.lng ? `${business.lat},${business.lng}` : encodeURIComponent(business.address)}`}
+          ></iframe>
+          {/* Fallback if no API key is provided or if it fails */}
+          <iframe
+            width="100%"
+            height="100%"
+            style={{ border: 0, position: 'absolute', top: 0, left: 0 }}
+            src={`https://maps.google.com/maps?q=${business.lat && business.lng ? `${business.lat},${business.lng}` : encodeURIComponent(business.address)}&t=&z=15&ie=UTF8&iwloc=&output=embed`}
+          ></iframe>
           <a 
-            href={business.mapsUrl || `https://www.google.com/maps/dir/?api=1&destination=${business.lat},${business.lng}`}
+            href={business.mapsUrl || `https://www.google.com/maps/dir/?api=1&destination=${business.lat && business.lng ? `${business.lat},${business.lng}` : encodeURIComponent(business.address)}`}
             target="_blank"
             rel="noreferrer"
             className="absolute bottom-3 right-3 bg-white text-blue-600 px-4 py-2 rounded-full shadow-lg font-bold text-xs flex items-center gap-2"
