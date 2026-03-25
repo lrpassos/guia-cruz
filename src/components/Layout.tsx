@@ -29,8 +29,8 @@ export const Layout: React.FC<LayoutProps> = ({ children, title, showBack, backT
     <div className="min-h-screen bg-gray-50 flex flex-col relative">
       {/* Header */}
       <header className="sticky top-0 z-50 bg-white border-b border-gray-100 h-16 flex items-center justify-center shadow-sm">
-        <div className="w-full max-w-6xl px-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
+        <div className="w-full max-w-6xl px-4 flex items-center justify-center relative">
+          <div className="absolute left-4 flex items-center gap-3">
             {showBack && (
               <button 
                 onClick={() => backTo ? navigate(backTo) : window.history.back()} 
@@ -39,26 +39,30 @@ export const Layout: React.FC<LayoutProps> = ({ children, title, showBack, backT
                 <ChevronLeft className="w-6 h-6 text-gray-600" />
               </button>
             )}
-            <div className="flex items-center">
-              {!showBack && (
-                settings?.appLogo ? (
-                  <img src={settings.appLogo} alt="Logo" className="h-16 w-auto object-contain" referrerPolicy="no-referrer" />
-                ) : (
-                  <div className="w-12 h-12 bg-blue-600 rounded-lg flex items-center justify-center mr-3">
-                    <BookOpen className="w-7 h-7 text-white" />
-                  </div>
-                )
-              )}
-              {(!settings?.appLogo || showBack) && (
-                <h1 className="text-xl font-bold text-gray-900 truncate ml-2">
-                  {title || settings?.appName || 'Guia Cruz'}
-                </h1>
-              )}
-            </div>
           </div>
+
+          <div className="flex items-center">
+            {!showBack && (
+              settings?.appLogo ? (
+                <img src={settings.appLogo} alt="Logo" className="h-16 w-auto object-contain" referrerPolicy="no-referrer" />
+              ) : (
+                <div className="w-12 h-12 bg-blue-600 rounded-lg flex items-center justify-center mr-3">
+                  <BookOpen className="w-7 h-7 text-white" />
+                </div>
+              )
+            )}
+            {(!settings?.appLogo || showBack) && (
+              <h1 className="text-xl font-bold text-gray-900 truncate">
+                {title || settings?.appName || 'Guia Cruz'}
+              </h1>
+            )}
+          </div>
+
           {user && (
-            <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold text-sm">
-              {user.name.charAt(0)}
+            <div className="absolute right-4">
+              <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold text-sm">
+                {user.name.charAt(0)}
+              </div>
             </div>
           )}
         </div>

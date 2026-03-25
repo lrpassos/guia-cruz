@@ -24,6 +24,39 @@ export const fetchExternalNews = async (): Promise<News[]> => {
     return newsCache.data;
   }
 
+  // Try RSS first (more reliable for real-time news)
+  try {
+    // You can change this URL to any newspaper RSS feed
+    const rssUrl = "https://g1.globo.com/rss/g1/bahia/"; 
+    const response = await fetch(`https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(rssUrl)}`);
+    const data = await response.json();
+
+    if (data.status === 'ok' && data.items && data.items.length > 0) {
+      const news = data.items.map((item: any) => {
+        // Try to find an image in the content if enclosure is missing
+        let photo = item.enclosure?.link || item.thumbnail;
+        if (!photo && item.description) {
+          const imgMatch = item.description.match(/<img[^>]+src="([^">]+)"/);
+          if (imgMatch) photo = imgMatch[1];
+        }
+
+        return {
+          id: item.guid || Math.random().toString(36).substr(2, 9),
+          title: item.title,
+          content: item.description.replace(/<[^>]*>?/gm, '').substring(0, 160).trim() + '...',
+          photo: photo || 'https://images.unsplash.com/photo-1504711434969-e33886168f5c?auto=format&fit=crop&w=800&q=80',
+          date: new Date(item.pubDate).toLocaleDateString('pt-BR'),
+          link: item.link
+        };
+      });
+      
+      newsCache = { data: news, timestamp: Date.now() };
+      return news;
+    }
+  } catch (error) {
+    console.error("Error fetching RSS news, falling back to Gemini:", error);
+  }
+
   const ai = getAI();
   if (!ai) return getFallbackNews();
 
@@ -62,7 +95,7 @@ export const fetchExternalNews = async (): Promise<News[]> => {
     
     return getFallbackNews();
   } catch (error) {
-    console.error("Error fetching external news:", error);
+    console.error("Error fetching external news via Gemini:", error);
     // Return stale cache if available on error
     return newsCache?.data || getFallbackNews();
   }
