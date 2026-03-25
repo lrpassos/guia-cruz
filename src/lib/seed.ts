@@ -14,14 +14,7 @@ export const seedDatabase = async () => {
 
     // Categories
     const categories = [
-      { name: 'Restaurantes', icon: 'Utensils', color: '#ef4444', order: 1 },
-      { name: 'Saúde', icon: 'HeartPulse', color: '#10b981', order: 2 },
-      { name: 'Lojas', icon: 'ShoppingBag', color: '#f59e0b', order: 3 },
-      { name: 'Serviços', icon: 'Wrench', color: '#3b82f6', order: 4 },
-      { name: 'Beleza', icon: 'Sparkles', color: '#ec4899', order: 5 },
-      { name: 'Educação', icon: 'GraduationCap', color: '#8b5cf6', order: 6 },
-      { name: 'Automotivo', icon: 'Car', color: '#6b7280', order: 7 },
-      { name: 'Pet Shop', icon: 'Dog', color: '#d97706', order: 8 },
+      { name: 'Supermercados', icon: 'ShoppingCart', iconUrl: 'https://cdn-icons-png.flaticon.com/512/3081/3081840.png', order: 1 },
     ];
 
     const catIds: string[] = [];
@@ -33,44 +26,19 @@ export const seedDatabase = async () => {
     // Businesses
     const businesses = [
       {
-        name: 'Pizzaria Bella Napoli',
-        description: 'A melhor pizza artesanal da cidade com ingredientes importados da Itália.',
+        name: 'Supermercado Central',
+        description: 'O melhor supermercado da região com produtos frescos e preços baixos.',
         categoryId: catIds[0],
-        address: 'Rua das Flores, 123 - Centro',
+        address: 'Rua Principal, 100 - Centro',
         lat: -23.5505,
         lng: -46.6333,
         phone: '11999999999',
         whatsapp: '5511999999999',
-        photos: ['https://images.unsplash.com/photo-1513104890138-7c749659a591?auto=format&fit=crop&w=800&q=80'],
-        rating: 4.8,
-        reviewCount: 124,
-        isFeatured: true
-      },
-      {
-        name: 'Clínica Sorriso',
-        description: 'Atendimento odontológico completo para toda a sua família.',
-        categoryId: catIds[1],
-        address: 'Av. Paulista, 1000 - Bela Vista',
-        lat: -23.5615,
-        lng: -46.6553,
-        phone: '1133333333',
-        photos: ['https://images.unsplash.com/photo-1629909613654-28e377c37b09?auto=format&fit=crop&w=800&q=80'],
-        rating: 4.9,
-        reviewCount: 89,
-        isFeatured: true
-      },
-      {
-        name: 'Moda & Estilo',
-        description: 'As últimas tendências da moda masculina e feminina com os melhores preços.',
-        categoryId: catIds[2],
-        address: 'Rua Oscar Freire, 500 - Jardins',
-        lat: -23.5655,
-        lng: -46.6663,
-        whatsapp: '5511988888888',
-        photos: ['https://images.unsplash.com/photo-1441986300917-64674bd600d8?auto=format&fit=crop&w=800&q=80'],
-        rating: 4.5,
-        reviewCount: 56,
-        isFeatured: false
+        photos: ['https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&w=800&q=80'],
+        rating: 5.0,
+        reviewCount: 1,
+        isFeatured: true,
+        isActive: true
       }
     ];
 

@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Layout } from '../components/Layout';
 import { useAuth } from '../hooks/useAuth';
 import { 
   addBusiness, 
   sendNotification, 
   getCategories, 
-  getFeaturedBusinesses, 
+  getAllBusinesses, 
   addCategory,
   deleteCategory,
   updateBusinessStatus,
@@ -17,10 +18,14 @@ import {
   deleteBanner
 } from '../services/firestore';
 import { Category, Business, Banner } from '../types';
-import { Plus, Send, Building, Bell, CheckCircle, Trash2, ShieldAlert, ShieldCheck, Grid, Image as ImageIcon, Edit2, X, MapPin, Upload, Eraser, Search } from 'lucide-react';
+import { Plus, Send, Building, Bell, CheckCircle, Trash2, ShieldAlert, ShieldCheck, Grid, Image as ImageIcon, Edit2, X, MapPin, Upload, Eraser, Search, ChevronRight, RefreshCw } from 'lucide-react';
+import { db } from '../lib/firebase';
+import { collection, deleteDoc, getDocs, doc, setDoc } from 'firebase/firestore';
+import { seedDatabase } from '../lib/seed';
 
 export const AdminPage: React.FC = () => {
   const { isAdmin, loading: authLoading } = useAuth();
+  const navigate = useNavigate();
   const [categories, setCategories] = useState<Category[]>([]);
   const [businesses, setBusinesses] = useState<Business[]>([]);
   const [banners, setBanners] = useState<Banner[]>([]);
@@ -65,15 +70,46 @@ export const AdminPage: React.FC = () => {
   });
 
   const fetchData = async () => {
+    setLoading(true);
     const [cats, bizs, bans] = await Promise.all([
       getCategories(), 
-      getFeaturedBusinesses(100),
+      getAllBusinesses(),
       getAllBanners()
     ]);
     setCategories(cats);
     setBusinesses(bizs);
     setBanners(bans);
     setLoading(false);
+  };
+
+  const handleResetDatabase = async () => {
+    if (!window.confirm('ATENÇÃO: Isso irá apagar TODAS as empresas, categorias e banners e restaurar o padrão (apenas Supermercados). Deseja continuar?')) return;
+    
+    setLoading(true);
+    try {
+      // Delete all collections
+      const collections = ['businesses', 'categories', 'banners', 'news', 'coupons', 'reviews', 'checkins', 'notifications'];
+      for (const coll of collections) {
+        const snap = await getDocs(collection(db, coll));
+        for (const d of snap.docs) {
+          await deleteDoc(doc(db, coll, d.id));
+        }
+      }
+      
+      // Reset seed flag
+      await setDoc(doc(db, 'settings', 'system'), { seeded: false });
+      
+      // Re-seed
+      await seedDatabase();
+      
+      setSuccess('Banco de dados resetado com sucesso!');
+      fetchData();
+    } catch (error) {
+      console.error('Error resetting database:', error);
+      alert('Erro ao resetar banco de dados.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const fileToBase64 = (file: File): Promise<string> => {
@@ -129,14 +165,8 @@ export const AdminPage: React.FC = () => {
   const handleAddBusiness = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      if (editingId) {
-        await updateBusiness(editingId, bizForm);
-        setSuccess('Empresa atualizada com sucesso!');
-      } else {
-        await addBusiness(bizForm);
-        setSuccess('Empresa adicionada com sucesso!');
-      }
-      setEditingId(null);
+      await addBusiness(bizForm);
+      setSuccess('Empresa adicionada com sucesso!');
       setBizForm({
         name: '',
         description: '',
@@ -154,39 +184,6 @@ export const AdminPage: React.FC = () => {
     } catch (error) {
       console.error('Error saving business:', error);
     }
-  };
-
-  const handleEditClick = (biz: Business) => {
-    setEditingId(biz.id);
-    setBizForm({
-      name: biz.name,
-      description: biz.description,
-      categoryId: biz.categoryId,
-      address: biz.address,
-      phone: biz.phone || '',
-      whatsapp: biz.whatsapp || '',
-      mapsUrl: biz.mapsUrl || '',
-      photos: biz.photos,
-      lat: biz.lat || 0,
-      lng: biz.lng || 0
-    });
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
-
-  const handleCancelEdit = () => {
-    setEditingId(null);
-    setBizForm({
-      name: '',
-      description: '',
-      categoryId: '',
-      address: '',
-      phone: '',
-      whatsapp: '',
-      mapsUrl: '',
-      photos: [''],
-      lat: 0,
-      lng: 0
-    });
   };
 
   const handleToggleStatus = async (id: string, currentStatus: boolean) => {
@@ -339,6 +336,21 @@ export const AdminPage: React.FC = () => {
   return (
     <Layout title="Painel Admin" showBack backTo="/profile">
       <div className="px-4 pt-6 space-y-8 pb-24">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900">Configurações</h1>
+            <p className="text-sm text-gray-500">Gerencie o sistema</p>
+          </div>
+          <button
+            onClick={handleResetDatabase}
+            className="flex items-center gap-2 px-4 py-2 bg-red-50 text-red-600 rounded-2xl hover:bg-red-100 transition-colors text-sm font-medium"
+            title="Resetar para o padrão (Apenas Supermercados)"
+          >
+            <RefreshCw className={cn("w-4 h-4", loading && "animate-spin")} />
+            Resetar Banco
+          </button>
+        </div>
+
         {success && (
           <div className="bg-green-50 text-green-700 p-4 rounded-2xl flex items-center gap-3 border border-green-100 animate-bounce">
             <CheckCircle className="w-5 h-5" /> {success}
@@ -425,16 +437,8 @@ export const AdminPage: React.FC = () => {
         <section className="bg-white rounded-3xl p-6 shadow-sm border border-gray-100">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2">
-              <Building className="w-5 h-5 text-blue-600" /> {editingId ? 'Editar Empresa' : 'Adicionar Empresa'}
+              <Building className="w-5 h-5 text-blue-600" /> Adicionar Empresa
             </h2>
-            {editingId && (
-              <button 
-                onClick={handleCancelEdit}
-                className="text-xs font-bold text-gray-400 flex items-center gap-1"
-              >
-                <X className="w-4 h-4" /> Cancelar
-              </button>
-            )}
           </div>
           <form onSubmit={handleAddBusiness} className="space-y-4">
             <input 
@@ -519,8 +523,7 @@ export const AdminPage: React.FC = () => {
               type="submit"
               className="w-full bg-blue-600 text-white py-4 rounded-2xl font-bold flex items-center justify-center gap-2 active:scale-95 transition-all"
             >
-              {editingId ? <CheckCircle className="w-5 h-5" /> : <Plus className="w-5 h-5" />}
-              {editingId ? 'Salvar Alterações' : 'Cadastrar Empresa'}
+              <Plus className="w-5 h-5" /> Cadastrar Empresa
             </button>
           </form>
         </section>
@@ -544,14 +547,18 @@ export const AdminPage: React.FC = () => {
             {businesses
               .filter(biz => biz.name.toLowerCase().includes(searchTerm.toLowerCase()))
               .map(biz => (
-              <div key={biz.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-2xl">
+              <div 
+                key={biz.id} 
+                className="flex items-center justify-between p-4 bg-gray-50 rounded-2xl hover:bg-gray-100 transition-colors cursor-pointer"
+                onClick={() => navigate(`/admin/edit-business/${biz.id}`)}
+              >
                 <div className="flex-1 min-w-0 mr-4">
                   <h4 className="font-bold text-gray-900 truncate">{biz.name}</h4>
                   <p className="text-xs text-gray-500">{biz.isActive ? 'Ativo' : 'Bloqueado'}</p>
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2" onClick={e => e.stopPropagation()}>
                   <button 
-                    onClick={() => handleEditClick(biz)}
+                    onClick={() => navigate(`/admin/edit-business/${biz.id}`)}
                     className="p-2 bg-blue-100 text-blue-600 rounded-xl"
                     title="Editar"
                   >

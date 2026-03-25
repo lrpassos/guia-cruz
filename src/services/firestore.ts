@@ -183,6 +183,18 @@ export const getNotifications = (callback: (notifications: AppNotification[]) =>
 };
 
 // Businesses
+export const getAllBusinesses = async (): Promise<Business[]> => {
+  const path = 'businesses';
+  try {
+    const q = query(collection(db, path), orderBy('name', 'asc'));
+    const snapshot = await getDocs(q);
+    return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Business));
+  } catch (error) {
+    handleFirestoreError(error, OperationType.LIST, path);
+    return [];
+  }
+};
+
 export const getFeaturedBusinesses = async (count: number = 5): Promise<Business[]> => {
   const cacheKey = `featured_${count}`;
   const cached = getCachedData(cacheKey);
