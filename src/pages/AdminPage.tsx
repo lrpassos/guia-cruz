@@ -86,25 +86,30 @@ export const AdminPage: React.FC = () => {
 
   const fetchData = async () => {
     setLoading(true);
-    const [cats, bizs, bans, settings, activeAnn] = await Promise.all([
-      getCategories(), 
-      getAllBusinesses(),
-      getAllBanners(),
-      getAppSettings(),
-      getActiveAnnouncement()
-    ]);
-    setCategories(cats);
-    setBusinesses(bizs);
-    setBanners(bans);
-    if (settings) setAppSettings(settings);
-    if (activeAnn) {
-      setAnnouncementForm({
-        imageUrl: activeAnn.imageUrl,
-        link: activeAnn.link || '',
-        active: activeAnn.active
-      });
+    try {
+      const [cats, bizs, bans, settings, activeAnn] = await Promise.all([
+        getCategories(), 
+        getAllBusinesses(),
+        getAllBanners(),
+        getAppSettings(),
+        getActiveAnnouncement()
+      ]);
+      setCategories(cats);
+      setBusinesses(bizs);
+      setBanners(bans);
+      if (settings) setAppSettings(settings);
+      if (activeAnn) {
+        setAnnouncementForm({
+          imageUrl: activeAnn.imageUrl,
+          link: activeAnn.link || '',
+          active: activeAnn.active
+        });
+      }
+    } catch (error) {
+      console.error('Error fetching admin data:', error);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   const handleResetDatabase = async () => {
