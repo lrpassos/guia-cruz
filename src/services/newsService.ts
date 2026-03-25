@@ -26,8 +26,8 @@ export const fetchExternalNews = async (): Promise<News[]> => {
 
   // Try RSS first (more reliable for real-time news)
   try {
-    // You can change this URL to any newspaper RSS feed
-    const rssUrl = "https://g1.globo.com/rss/g1/bahia/"; 
+    // Specific feed requested by the user
+    const rssUrl = "http://bahiaativa.com.br/feeds/posts/default"; 
     const response = await fetch(`https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(rssUrl)}`);
     const data = await response.json();
 
