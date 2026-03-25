@@ -8,7 +8,7 @@ interface CategoryIconProps {
   category: Category;
 }
 
-export const CategoryIcon: React.FC<CategoryIconProps> = ({ category }) => {
+export const CategoryIcon: React.FC<CategoryIconProps> = React.memo(({ category }) => {
   // Dynamically get the icon from lucide-react
   const IconComponent = (Icons as any)[category.icon] || Icons.HelpCircle;
 
@@ -30,6 +30,7 @@ export const CategoryIcon: React.FC<CategoryIconProps> = ({ category }) => {
             alt={category.name} 
             className="w-full h-full object-cover"
             referrerPolicy="no-referrer"
+            loading="lazy"
           />
         ) : (
           <IconComponent className="w-7 h-7" />
@@ -40,4 +41,4 @@ export const CategoryIcon: React.FC<CategoryIconProps> = ({ category }) => {
       </span>
     </Link>
   );
-};
+});

@@ -17,11 +17,33 @@ import {
 import { db } from '../lib/firebase';
 import { Category, Business, Review, Coupon, News, Banner, CheckIn, Notification as AppNotification } from '../types';
 
+// Simple in-memory cache
+const cache: { [key: string]: { data: any, timestamp: number } } = {};
+const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
+
+const getCachedData = (key: string) => {
+  const cached = cache[key];
+  if (cached && Date.now() - cached.timestamp < CACHE_DURATION) {
+    return cached.data;
+  }
+  return null;
+};
+
+const setCachedData = (key: string, data: any) => {
+  cache[key] = { data, timestamp: Date.now() };
+};
+
 // Categories
 export const getCategories = async (): Promise<Category[]> => {
+  const cacheKey = 'categories';
+  const cached = getCachedData(cacheKey);
+  if (cached) return cached;
+
   const q = query(collection(db, 'categories'), orderBy('order', 'asc'));
   const snapshot = await getDocs(q);
-  return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Category));
+  const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Category));
+  setCachedData(cacheKey, data);
+  return data;
 };
 
 export const addBusiness = async (business: Omit<Business, 'id' | 'rating' | 'reviewCount' | 'isActive'>) => {
@@ -105,6 +127,10 @@ export const getNotifications = (callback: (notifications: AppNotification[]) =>
 
 // Businesses
 export const getFeaturedBusinesses = async (count: number = 5): Promise<Business[]> => {
+  const cacheKey = `featured_${count}`;
+  const cached = getCachedData(cacheKey);
+  if (cached) return cached;
+
   const q = query(
     collection(db, 'businesses'), 
     where('isFeatured', '==', true), 
@@ -112,7 +138,9 @@ export const getFeaturedBusinesses = async (count: number = 5): Promise<Business
     limit(count)
   );
   const snapshot = await getDocs(q);
-  return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Business));
+  const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Business));
+  setCachedData(cacheKey, data);
+  return data;
 };
 
 export const getBusinessesByCategory = async (categoryId: string): Promise<Business[]> => {
@@ -168,9 +196,15 @@ export const getLatestNews = async (count: number = 10): Promise<News[]> => {
 
 // Banners
 export const getActiveBanners = async (): Promise<Banner[]> => {
+  const cacheKey = 'active_banners';
+  const cached = getCachedData(cacheKey);
+  if (cached) return cached;
+
   const q = query(collection(db, 'banners'), where('active', '==', true));
   const snapshot = await getDocs(q);
-  return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Banner));
+  const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Banner));
+  setCachedData(cacheKey, data);
+  return data;
 };
 
 export const getAllBanners = async (): Promise<Banner[]> => {

@@ -9,7 +9,7 @@ interface BusinessCardProps {
   variant?: 'horizontal' | 'vertical';
 }
 
-export const BusinessCard: React.FC<BusinessCardProps> = ({ business, variant = 'vertical' }) => {
+export const BusinessCard: React.FC<BusinessCardProps> = React.memo(({ business, variant = 'vertical' }) => {
   if (variant === 'horizontal') {
     return (
       <Link 
@@ -22,6 +22,7 @@ export const BusinessCard: React.FC<BusinessCardProps> = ({ business, variant = 
             alt={business.name}
             className="w-full h-full object-cover"
             referrerPolicy="no-referrer"
+            loading="lazy"
           />
         </div>
         <div className="flex-1 flex flex-col justify-between py-1">
@@ -53,6 +54,7 @@ export const BusinessCard: React.FC<BusinessCardProps> = ({ business, variant = 
           alt={business.name}
           className="w-full h-full object-cover"
           referrerPolicy="no-referrer"
+          loading="lazy"
         />
         {business.isFeatured && (
           <div className="absolute top-2 left-2 bg-blue-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">
@@ -74,4 +76,4 @@ export const BusinessCard: React.FC<BusinessCardProps> = ({ business, variant = 
       </div>
     </Link>
   );
-};
+});

@@ -3,7 +3,15 @@ import { News } from "../types";
 
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY! });
 
+let newsCache: { data: News[], timestamp: number } | null = null;
+const CACHE_DURATION = 1000 * 60 * 30; // 30 minutes
+
 export const fetchExternalNews = async (): Promise<News[]> => {
+  // Return cached data if valid
+  if (newsCache && (Date.now() - newsCache.timestamp < CACHE_DURATION)) {
+    return newsCache.data;
+  }
+
   try {
     const response = await ai.models.generateContent({
       model: "gemini-3-flash-preview",
@@ -30,9 +38,16 @@ export const fetchExternalNews = async (): Promise<News[]> => {
     });
 
     const news = JSON.parse(response.text || "[]") as News[];
+    
+    // Update cache
+    if (news.length > 0) {
+      newsCache = { data: news, timestamp: Date.now() };
+    }
+    
     return news;
   } catch (error) {
     console.error("Error fetching external news:", error);
-    return [];
+    // Return stale cache if available on error
+    return newsCache?.data || [];
   }
 };
