@@ -15,10 +15,12 @@ import {
   getAllBanners,
   addBanner,
   updateBannerStatus,
-  deleteBanner
+  deleteBanner,
+  getAppSettings,
+  updateAppSettings
 } from '../services/firestore';
-import { Category, Business, Banner } from '../types';
-import { Plus, Send, Building, Bell, CheckCircle, Trash2, ShieldAlert, ShieldCheck, Grid, Image as ImageIcon, Edit2, X, MapPin, Upload, Eraser, Search, ChevronRight, RefreshCw } from 'lucide-react';
+import { Category, Business, Banner, AppSettings } from '../types';
+import { Plus, Send, Building, Bell, CheckCircle, Trash2, ShieldAlert, ShieldCheck, Grid, Image as ImageIcon, Edit2, X, MapPin, Upload, Eraser, Search, ChevronRight, RefreshCw, Settings, Save } from 'lucide-react';
 import { db } from '../lib/firebase';
 import { collection, deleteDoc, getDocs, doc, setDoc } from 'firebase/firestore';
 import { seedDatabase } from '../lib/seed';
@@ -33,6 +35,11 @@ export const AdminPage: React.FC = () => {
   const [success, setSuccess] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
+  const [appSettings, setAppSettings] = useState<AppSettings>({
+    appLogo: '',
+    appName: 'Guia Cruz'
+  });
+  const [savingSettings, setSavingSettings] = useState(false);
 
   // Category Form State
   const [catForm, setCatForm] = useState({
@@ -71,14 +78,16 @@ export const AdminPage: React.FC = () => {
 
   const fetchData = async () => {
     setLoading(true);
-    const [cats, bizs, bans] = await Promise.all([
+    const [cats, bizs, bans, settings] = await Promise.all([
       getCategories(), 
       getAllBusinesses(),
-      getAllBanners()
+      getAllBanners(),
+      getAppSettings()
     ]);
     setCategories(cats);
     setBusinesses(bizs);
     setBanners(bans);
+    if (settings) setAppSettings(settings);
     setLoading(false);
   };
 
@@ -121,7 +130,7 @@ export const AdminPage: React.FC = () => {
     });
   };
 
-  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>, type: 'category' | 'business' | 'banner') => {
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>, type: 'category' | 'business' | 'banner' | 'logo') => {
     const file = e.target.files?.[0];
     if (!file) return;
 
@@ -139,9 +148,26 @@ export const AdminPage: React.FC = () => {
         setBizForm({ ...bizForm, photos: [base64] });
       } else if (type === 'banner') {
         setBannerForm({ ...bannerForm, imageUrl: base64 });
+      } else if (type === 'logo') {
+        setAppSettings({ ...appSettings, appLogo: base64 });
       }
     } catch (error) {
       console.error('Error converting file:', error);
+    }
+  };
+
+  const handleSaveSettings = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSavingSettings(true);
+    try {
+      await updateAppSettings(appSettings);
+      setSuccess('Configurações salvas com sucesso!');
+      setTimeout(() => setSuccess(null), 3000);
+    } catch (error) {
+      console.error('Error saving settings:', error);
+      alert('Erro ao salvar configurações.');
+    } finally {
+      setSavingSettings(false);
     }
   };
 
@@ -356,6 +382,54 @@ export const AdminPage: React.FC = () => {
             <CheckCircle className="w-5 h-5" /> {success}
           </div>
         )}
+
+        {/* App Settings */}
+        <section className="bg-white rounded-3xl p-6 shadow-sm border border-gray-100">
+          <h2 className="text-lg font-bold text-gray-900 mb-6 flex items-center gap-2">
+            <Settings className="w-5 h-5 text-blue-600" /> Configurações do App
+          </h2>
+          <form onSubmit={handleSaveSettings} className="space-y-4">
+            <div className="space-y-2">
+              <label className="text-xs font-bold text-gray-400 uppercase tracking-wider ml-1">Nome do Aplicativo</label>
+              <input 
+                type="text" 
+                value={appSettings.appName}
+                onChange={e => setAppSettings({...appSettings, appName: e.target.value})}
+                className="w-full bg-gray-50 border-none rounded-xl p-4 text-sm focus:ring-2 focus:ring-blue-500"
+                placeholder="Ex: Guia Cruz"
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-xs font-bold text-gray-400 uppercase tracking-wider ml-1">Logomarca do App</label>
+              <div className="flex gap-2">
+                <input 
+                  type="text" 
+                  placeholder="URL da Logo ou Link Google Drive" 
+                  value={appSettings.appLogo}
+                  onChange={e => setAppSettings({...appSettings, appLogo: e.target.value})}
+                  className="flex-1 bg-gray-50 border-none rounded-xl p-4 text-sm focus:ring-2 focus:ring-blue-500"
+                />
+                <label className="bg-gray-100 p-4 rounded-xl cursor-pointer hover:bg-gray-200 transition-colors">
+                  <Upload className="w-5 h-5 text-gray-500" />
+                  <input type="file" accept="image/*" className="hidden" onChange={e => handleFileChange(e, 'logo')} />
+                </label>
+              </div>
+              {appSettings.appLogo && (
+                <div className="mt-2 p-4 bg-gray-50 rounded-2xl flex justify-center border border-gray-100">
+                  <img src={appSettings.appLogo} alt="App Logo Preview" className="h-16 object-contain" referrerPolicy="no-referrer" />
+                </div>
+              )}
+            </div>
+            <button 
+              type="submit"
+              disabled={savingSettings}
+              className="w-full bg-blue-600 text-white py-4 rounded-2xl font-bold flex items-center justify-center gap-2 active:scale-95 transition-all disabled:opacity-50"
+            >
+              {savingSettings ? <RefreshCw className="w-5 h-5 animate-spin" /> : <Save className="w-5 h-5" />}
+              Salvar Configurações
+            </button>
+          </form>
+        </section>
 
         {/* Add Category Form */}
         <section className="bg-white rounded-3xl p-6 shadow-sm border border-gray-100">

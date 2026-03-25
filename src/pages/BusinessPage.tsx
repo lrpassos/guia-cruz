@@ -5,12 +5,14 @@ import { Business, Review, Coupon } from '../types';
 import { Layout } from '../components/Layout';
 import { Star, MapPin, Phone, MessageCircle, Send, Navigation, Info, Tag, Share2, QrCode, CheckCircle2 } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
+import { useSettings } from '../hooks/useSettings';
 import { cn } from '../lib/utils';
 import { QRCodeSVG } from 'qrcode.react';
 
 export const BusinessPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const { user, login } = useAuth();
+  const { settings } = useSettings();
   const [business, setBusiness] = useState<Business | null>(null);
   const [reviews, setReviews] = useState<Review[]>([]);
   const [coupons, setCoupons] = useState<Coupon[]>([]);
@@ -53,7 +55,7 @@ export const BusinessPage: React.FC = () => {
 
   const shareBusiness = (platform: string) => {
     const url = window.location.href;
-    const text = `Confira ${business?.name} no Guia Cruz!`;
+    const text = `Confira ${business?.name} no ${settings?.appName || 'Guia Cruz'}!`;
     
     let shareUrl = '';
     switch (platform) {

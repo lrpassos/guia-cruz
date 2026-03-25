@@ -8,6 +8,7 @@ import {
   orderBy, 
   limit, 
   addDoc, 
+  setDoc,
   updateDoc, 
   deleteDoc, 
   onSnapshot,
@@ -15,7 +16,7 @@ import {
   serverTimestamp
 } from 'firebase/firestore';
 import { db, auth } from '../lib/firebase';
-import { Category, Business, Review, Coupon, News, Banner, CheckIn, Notification as AppNotification } from '../types';
+import { Category, Business, Review, Coupon, News, Banner, CheckIn, Notification as AppNotification, AppSettings } from '../types';
 import { handleFirestoreError, OperationType } from '../lib/firestore-errors';
 
 // Simple in-memory cache
@@ -358,5 +359,28 @@ export const deleteBanner = async (id: string) => {
     return await deleteDoc(docRef);
   } catch (error) {
     handleFirestoreError(error, OperationType.DELETE, path);
+  }
+};
+
+// Settings
+export const getAppSettings = async (): Promise<AppSettings | null> => {
+  const path = 'settings/global';
+  try {
+    const docRef = doc(db, 'settings', 'global');
+    const docSnap = await getDoc(docRef);
+    return docSnap.exists() ? (docSnap.data() as AppSettings) : null;
+  } catch (error) {
+    handleFirestoreError(error, OperationType.GET, path);
+    return null;
+  }
+};
+
+export const updateAppSettings = async (settings: AppSettings) => {
+  const path = 'settings/global';
+  try {
+    const docRef = doc(db, 'settings', 'global');
+    return await setDoc(docRef, settings, { merge: true });
+  } catch (error) {
+    handleFirestoreError(error, OperationType.UPDATE, path);
   }
 };

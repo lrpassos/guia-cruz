@@ -119,6 +119,15 @@
         "points": { "type": "number" }
       },
       "required": ["email"]
+    },
+    "Settings": {
+      "title": "Settings",
+      "description": "Global application settings like logo, app name, etc.",
+      "type": "object",
+      "properties": {
+        "appLogo": { "type": "string" },
+        "appName": { "type": "string" }
+      }
     }
   },
   "firestore": {
@@ -130,6 +139,7 @@
     "/banners/{bannerId}": { "schema": "Banner", "description": "Home banners" },
     "/users/{userId}": { "schema": "User", "description": "User profiles" },
     "/notifications/{notificationId}": { "schema": "Notification", "description": "Push notifications" },
-    "/checkins/{checkinId}": { "schema": "CheckIn", "description": "User check-ins" }
+    "/checkins/{checkinId}": { "schema": "CheckIn", "description": "User check-ins" },
+    "/settings/{settingId}": { "schema": "Settings", "description": "Global settings" }
   }
 }

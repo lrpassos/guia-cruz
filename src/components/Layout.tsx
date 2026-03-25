@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Home, Search, BookOpen, User, Menu, ChevronLeft } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
+import { useSettings } from '../hooks/useSettings';
 import { cn } from '../lib/utils';
 
 interface LayoutProps {
@@ -13,6 +14,7 @@ interface LayoutProps {
 
 export const Layout: React.FC<LayoutProps> = ({ children, title, showBack, backTo }) => {
   const { user, login } = useAuth();
+  const { settings } = useSettings();
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -37,9 +39,20 @@ export const Layout: React.FC<LayoutProps> = ({ children, title, showBack, backT
                 <ChevronLeft className="w-6 h-6 text-gray-600" />
               </button>
             )}
-            <h1 className="text-xl font-bold text-gray-900 truncate">
-              {title || 'Guia Cruz'}
-            </h1>
+            <div className="flex items-center gap-2">
+              {!showBack && (
+                settings?.appLogo ? (
+                  <img src={settings.appLogo} alt="Logo" className="h-8 object-contain" referrerPolicy="no-referrer" />
+                ) : (
+                  <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
+                    <BookOpen className="w-5 h-5 text-white" />
+                  </div>
+                )
+              )}
+              <h1 className="text-xl font-bold text-gray-900 truncate">
+                {title || settings?.appName || 'Guia Cruz'}
+              </h1>
+            </div>
           </div>
           {user && (
             <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold text-xs">

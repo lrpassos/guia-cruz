@@ -1,11 +1,13 @@
 import React from 'react';
 import { Layout } from '../components/Layout';
 import { useAuth } from '../hooks/useAuth';
+import { useSettings } from '../hooks/useSettings';
 import { LogIn, LogOut, Settings, Award, MapPin, Bell, User, ChevronRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 export const ProfilePage: React.FC = () => {
   const { user, login, logout, isAdmin, loading } = useAuth();
+  const { settings } = useSettings();
 
   if (loading) {
     return (
@@ -25,7 +27,7 @@ export const ProfilePage: React.FC = () => {
             <div className="w-20 h-20 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-6">
               <User className="w-10 h-10 text-blue-600" />
             </div>
-            <h2 className="text-xl font-bold text-gray-900 mb-2">Bem-vindo ao Guia Cruz</h2>
+            <h2 className="text-xl font-bold text-gray-900 mb-2">Bem-vindo ao {settings?.appName || 'Guia Cruz'}</h2>
             <p className="text-gray-500 text-sm mb-8">Faça login para salvar favoritos, avaliar empresas e ganhar pontos.</p>
             <button 
               onClick={login}

@@ -85,3 +85,8 @@ export interface Notification {
   message: string;
   createdAt: string;
 }
+
+export interface AppSettings {
+  appLogo?: string;
+  appName?: string;
+}
