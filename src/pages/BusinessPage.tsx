@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { getBusinessById, getReviewsByBusiness, addReview, getCouponsByBusiness, addCheckIn } from '../services/firestore';
+import { getBusinessById, getReviewsByBusiness, addReview, getCouponsByBusiness } from '../services/firestore';
 import { Business, Review, Coupon } from '../types';
 import { Layout } from '../components/Layout';
-import { Star, MapPin, Phone, MessageCircle, Send, Navigation, Info, Tag, Share2, QrCode, CheckCircle2 } from 'lucide-react';
+import { Star, MapPin, Phone, MessageCircle, Send, Navigation, Info, Tag, Share2 } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import { useSettings } from '../hooks/useSettings';
 import { cn } from '../lib/utils';
@@ -20,7 +20,6 @@ export const BusinessPage: React.FC = () => {
   const [newComment, setNewComment] = useState('');
   const [newRating, setNewRating] = useState(5);
   const [showQr, setShowQr] = useState(false);
-  const [checkedIn, setCheckedIn] = useState(false);
 
   useEffect(() => {
     if (!id) return;
@@ -38,20 +37,6 @@ export const BusinessPage: React.FC = () => {
     const unsubscribe = getReviewsByBusiness(id, setReviews);
     return () => unsubscribe();
   }, [id]);
-
-  const handleCheckIn = async () => {
-    if (!user || !id) {
-      login();
-      return;
-    }
-    try {
-      await addCheckIn(id, user.uid);
-      setCheckedIn(true);
-      setTimeout(() => setCheckedIn(false), 3000);
-    } catch (error) {
-      console.error('Error checking in:', error);
-    }
-  };
 
   const shareBusiness = (platform: string) => {
     const url = window.location.href;
@@ -139,36 +124,42 @@ export const BusinessPage: React.FC = () => {
             )}
           </div>
 
-          <div className="mt-6 flex flex-wrap gap-2">
-            {business.phone && (
-              <a href={`tel:${business.phone}`} className="flex-1 min-w-[100px] flex items-center justify-center gap-2 bg-gray-100 text-gray-700 py-3 rounded-2xl font-bold text-sm active:scale-95 transition-all">
-                <Phone className="w-4 h-4" /> Ligar
-              </a>
-            )}
-            {business.whatsapp && (
-              <a href={`https://wa.me/${business.whatsapp}`} target="_blank" rel="noreferrer" className="flex-1 min-w-[100px] flex items-center justify-center gap-2 bg-green-500 text-white py-3 rounded-2xl font-bold text-sm active:scale-95 transition-all">
-                <MessageCircle className="w-4 h-4" /> WhatsApp
-              </a>
-            )}
+          <div className="mt-6">
+            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-3 px-1">Opções de Contato</p>
+            <div className="flex flex-wrap gap-3">
+              {business.phone && (
+                <a 
+                  href={`tel:${business.phone}`} 
+                  className="flex-1 min-w-[140px] flex flex-col items-center justify-center gap-2 bg-gray-50 text-gray-700 py-4 rounded-3xl font-bold text-xs active:scale-95 transition-all border border-gray-100"
+                >
+                  <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center text-blue-600">
+                    <Phone className="w-5 h-5" />
+                  </div>
+                  Ligar Telefone
+                </a>
+              )}
+              {business.whatsapp && (
+                <a 
+                  href={`https://wa.me/${business.whatsapp}`} 
+                  target="_blank" 
+                  rel="noreferrer" 
+                  className="flex-1 min-w-[140px] flex flex-col items-center justify-center gap-2 bg-green-50 text-green-700 py-4 rounded-3xl font-bold text-xs active:scale-95 transition-all border border-green-100"
+                >
+                  <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center text-green-600">
+                    <MessageCircle className="w-5 h-5" />
+                  </div>
+                  Ligar WhatsApp
+                </a>
+              )}
+            </div>
           </div>
 
-          <div className="mt-4 grid grid-cols-2 gap-2">
-            <button 
-              onClick={handleCheckIn}
-              disabled={checkedIn}
-              className={cn(
-                "flex items-center justify-center gap-2 py-3 rounded-2xl font-bold text-sm transition-all active:scale-95",
-                checkedIn ? "bg-green-50 text-green-600 border border-green-100" : "bg-blue-50 text-blue-600 border border-blue-100"
-              )}
-            >
-              {checkedIn ? <CheckCircle2 className="w-4 h-4" /> : <QrCode className="w-4 h-4" />}
-              {checkedIn ? 'Check-in Realizado!' : 'Fazer Check-in'}
-            </button>
+          <div className="mt-4 grid grid-cols-1 gap-2">
             <button 
               onClick={() => setShowQr(!showQr)}
-              className="flex items-center justify-center gap-2 bg-gray-50 text-gray-600 py-3 rounded-2xl font-bold text-sm border border-gray-100 active:scale-95"
+              className="flex items-center justify-center gap-2 bg-blue-600 text-white py-3 rounded-2xl font-bold text-sm active:scale-95 transition-all"
             >
-              <Share2 className="w-4 h-4" /> Compartilhar
+              <Share2 className="w-4 h-4" /> Compartilhar Empresa
             </button>
           </div>
 

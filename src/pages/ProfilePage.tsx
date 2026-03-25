@@ -28,7 +28,7 @@ export const ProfilePage: React.FC = () => {
               <User className="w-10 h-10 text-blue-600" />
             </div>
             <h2 className="text-xl font-bold text-gray-900 mb-2">Bem-vindo ao {settings?.appName || 'Guia Cruz'}</h2>
-            <p className="text-gray-500 text-sm mb-8">Faça login para salvar favoritos, avaliar empresas e ganhar pontos.</p>
+            <p className="text-gray-500 text-sm mb-8">Faça login para salvar favoritos, avaliar empresas e ver as novidades.</p>
             <button 
               onClick={login}
               className="w-full bg-blue-600 text-white py-4 rounded-2xl font-bold flex items-center justify-center gap-3 active:scale-95 transition-all"
@@ -46,9 +46,6 @@ export const ProfilePage: React.FC = () => {
               <div>
                 <h2 className="text-lg font-bold text-gray-900">{user.name}</h2>
                 <p className="text-gray-500 text-xs">{user.email}</p>
-                <div className="mt-2 flex items-center gap-1 bg-yellow-50 text-yellow-700 px-2 py-0.5 rounded-full text-[10px] font-bold w-fit">
-                  <Award className="w-3 h-3" /> {user.points || 0} Pontos
-                </div>
               </div>
             </div>
 
@@ -66,16 +63,6 @@ export const ProfilePage: React.FC = () => {
                 </Link>
               )}
               
-              <button className="w-full flex items-center justify-between p-4 hover:bg-gray-50 border-b border-gray-50 transition-colors">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-blue-50 rounded-xl flex items-center justify-center text-blue-600">
-                    <MapPin className="w-5 h-5" />
-                  </div>
-                  <span className="font-bold text-gray-700">Meus Check-ins</span>
-                </div>
-                <ChevronRight className="w-5 h-5 text-gray-300" />
-              </button>
-
               <Link to="/news" className="w-full flex items-center justify-between p-4 hover:bg-gray-50 border-b border-gray-50 transition-colors">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 bg-orange-50 rounded-xl flex items-center justify-center text-orange-600">

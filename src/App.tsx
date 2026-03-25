@@ -13,7 +13,6 @@ const ProfilePage = lazy(() => import('./pages/ProfilePage').then(m => ({ defaul
 const AdminPage = lazy(() => import('./pages/AdminPage').then(m => ({ default: m.AdminPage })));
 const EditBusinessPage = lazy(() => import('./pages/EditBusinessPage').then(m => ({ default: m.EditBusinessPage })));
 const NotificationsPage = lazy(() => import('./pages/NotificationsPage').then(m => ({ default: m.NotificationsPage })));
-const ScannerPage = lazy(() => import('./pages/ScannerPage').then(m => ({ default: m.ScannerPage })));
 
 const LoadingFallback = () => (
   <div className="flex items-center justify-center h-screen bg-gray-50">
@@ -40,7 +39,6 @@ export default function App() {
             <Route path="/profile" element={<ProfilePage />} />
             <Route path="/admin" element={<AdminPage />} />
             <Route path="/admin/edit-business/:id" element={<EditBusinessPage />} />
-            <Route path="/scan" element={<ScannerPage />} />
             <Route path="/news" element={<NotificationsPage />} />
             <Route path="*" element={<Home />} />
           </Routes>

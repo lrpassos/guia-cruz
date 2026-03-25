@@ -16,7 +16,7 @@ import {
   serverTimestamp
 } from 'firebase/firestore';
 import { db, auth } from '../lib/firebase';
-import { Category, Business, Review, Coupon, News, Banner, CheckIn, Notification as AppNotification, AppSettings, Announcement } from '../types';
+import { Category, Business, Review, Coupon, News, Banner, Notification as AppNotification, AppSettings, Announcement } from '../types';
 import { handleFirestoreError, OperationType } from '../lib/firestore-errors';
 
 // Simple in-memory cache
@@ -118,44 +118,6 @@ export const deleteCategory = async (id: string) => {
     return await deleteDoc(docRef);
   } catch (error) {
     handleFirestoreError(error, OperationType.DELETE, path);
-  }
-};
-
-// Check-ins
-export const addCheckIn = async (businessId: string, userId: string) => {
-  const path = 'checkins';
-  try {
-    const checkin = {
-      businessId,
-      userId,
-      createdAt: new Date().toISOString()
-    };
-    await addDoc(collection(db, path), checkin);
-    
-    // Increment user points
-    const userPath = `users/${userId}`;
-    const userRef = doc(db, 'users', userId);
-    const userSnap = await getDoc(userRef);
-    if (userSnap.exists()) {
-      const userData = userSnap.data();
-      await updateDoc(userRef, {
-        points: (userData.points || 0) + 10
-      });
-    }
-  } catch (error) {
-    handleFirestoreError(error, OperationType.WRITE, path);
-  }
-};
-
-export const getUserCheckIns = async (userId: string): Promise<CheckIn[]> => {
-  const path = 'checkins';
-  try {
-    const q = query(collection(db, path), where('userId', '==', userId), orderBy('createdAt', 'desc'));
-    const snapshot = await getDocs(q);
-    return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as CheckIn));
-  } catch (error) {
-    handleFirestoreError(error, OperationType.LIST, path);
-    return [];
   }
 };
 

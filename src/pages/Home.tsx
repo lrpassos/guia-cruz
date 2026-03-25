@@ -85,16 +85,16 @@ export const Home: React.FC = () => {
             Ver todas <ChevronRight className="w-3 h-3" />
           </Link>
         </div>
-        <div className="grid grid-cols-4 gap-y-6 gap-x-2">
+        <div className="grid grid-cols-5 gap-y-3 gap-x-1">
           {loading ? (
-            Array.from({ length: 8 }).map((_, i) => (
-              <div key={i} className="flex flex-col items-center gap-2">
-                <div className="w-14 h-14 rounded-2xl bg-gray-100 animate-pulse" />
+            Array.from({ length: 10 }).map((_, i) => (
+              <div key={i} className="flex flex-col items-center gap-1.5">
+                <div className="w-12 h-12 rounded-2xl bg-gray-100 animate-pulse" />
                 <div className="w-12 h-2 bg-gray-100 rounded animate-pulse" />
               </div>
             ))
           ) : (
-            categories.slice(0, 8).map((cat) => (
+            categories.slice(0, 10).map((cat) => (
               <CategoryIcon key={cat.id} category={cat} />
             ))
           )}

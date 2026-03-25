@@ -15,11 +15,11 @@ export const CategoryIcon: React.FC<CategoryIconProps> = React.memo(({ category 
   return (
     <Link 
       to={`/category/${category.id}`}
-      className="flex flex-col items-center gap-2 group"
+      className="flex flex-col items-center gap-1.5 group"
     >
       <div 
         className={cn(
-          "w-14 h-14 rounded-2xl flex items-center justify-center transition-all group-active:scale-90 overflow-hidden",
+          "w-12 h-12 rounded-2xl flex items-center justify-center transition-all group-active:scale-90 overflow-hidden",
           "bg-white border border-gray-100 shadow-sm group-hover:border-blue-200"
         )}
         style={{ color: category.color || '#3b82f6' }}
@@ -33,10 +33,10 @@ export const CategoryIcon: React.FC<CategoryIconProps> = React.memo(({ category 
             loading="lazy"
           />
         ) : (
-          <IconComponent className="w-7 h-7" />
+          <IconComponent className="w-6 h-6" />
         )}
       </div>
-      <span className="text-[11px] font-semibold text-gray-600 text-center leading-tight">
+      <span className="text-[10px] font-semibold text-gray-600 text-center leading-tight">
         {category.name}
       </span>
     </Link>

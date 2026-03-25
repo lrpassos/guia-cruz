@@ -68,14 +68,6 @@ export interface User {
   name: string;
   email: string;
   role: 'admin' | 'user';
-  points?: number;
-}
-
-export interface CheckIn {
-  id: string;
-  businessId: string;
-  userId: string;
-  createdAt: string;
 }
 
 export interface Notification {

@@ -39,19 +39,21 @@ export const Layout: React.FC<LayoutProps> = ({ children, title, showBack, backT
                 <ChevronLeft className="w-6 h-6 text-gray-600" />
               </button>
             )}
-            <div className="flex items-center gap-2">
+            <div className="flex items-center">
               {!showBack && (
                 settings?.appLogo ? (
-                  <img src={settings.appLogo} alt="Logo" className="h-10 object-contain" referrerPolicy="no-referrer" />
+                  <img src={settings.appLogo} alt="Logo" className="h-16 w-auto object-contain" referrerPolicy="no-referrer" />
                 ) : (
-                  <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center">
-                    <BookOpen className="w-6 h-6 text-white" />
+                  <div className="w-12 h-12 bg-blue-600 rounded-lg flex items-center justify-center mr-3">
+                    <BookOpen className="w-7 h-7 text-white" />
                   </div>
                 )
               )}
-              <h1 className="text-xl font-bold text-gray-900 truncate">
-                {title || settings?.appName || 'Guia Cruz'}
-              </h1>
+              {(!settings?.appLogo || showBack) && (
+                <h1 className="text-xl font-bold text-gray-900 truncate ml-2">
+                  {title || settings?.appName || 'Guia Cruz'}
+                </h1>
+              )}
             </div>
           </div>
           {user && (

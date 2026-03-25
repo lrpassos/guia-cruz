@@ -118,7 +118,7 @@ export const AdminPage: React.FC = () => {
     setLoading(true);
     try {
       // Delete all collections
-      const collections = ['businesses', 'categories', 'banners', 'news', 'coupons', 'reviews', 'checkins', 'notifications'];
+      const collections = ['businesses', 'categories', 'banners', 'news', 'coupons', 'reviews', 'notifications'];
       for (const coll of collections) {
         const snap = await getDocs(collection(db, coll));
         for (const d of snap.docs) {
