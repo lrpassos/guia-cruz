@@ -17,7 +17,7 @@ import {
   deleteBanner
 } from '../services/firestore';
 import { Category, Business, Banner } from '../types';
-import { Plus, Send, Building, Bell, CheckCircle, Trash2, ShieldAlert, ShieldCheck, Grid, Image as ImageIcon, Edit2, X, MapPin, Upload, Settings, Eraser } from 'lucide-react';
+import { Plus, Send, Building, Bell, CheckCircle, Trash2, ShieldAlert, ShieldCheck, Grid, Image as ImageIcon, Edit2, X, MapPin, Upload, Settings, Eraser, Search } from 'lucide-react';
 
 export const AdminPage: React.FC = () => {
   const { isAdmin, loading: authLoading } = useAuth();
@@ -27,6 +27,7 @@ export const AdminPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [success, setSuccess] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [searchTerm, setSearchTerm] = useState('');
 
   // Category Form State
   const [catForm, setCatForm] = useState({
@@ -561,6 +562,64 @@ export const AdminPage: React.FC = () => {
               {editingId ? 'Salvar Alterações' : 'Cadastrar Empresa'}
             </button>
           </form>
+        </section>
+
+        {/* Manage Businesses */}
+        <section className="bg-white rounded-3xl p-6 shadow-sm border border-gray-100">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+            <h2 className="text-lg font-bold text-gray-900">Gerenciar Empresas</h2>
+            <div className="relative flex-1 max-w-xs">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <input 
+                type="text" 
+                placeholder="Buscar empresa..." 
+                value={searchTerm}
+                onChange={e => setSearchTerm(e.target.value)}
+                className="w-full pl-9 pr-4 py-2 bg-gray-50 border-none rounded-xl text-sm focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+          </div>
+          <div className="space-y-4">
+            {businesses
+              .filter(biz => biz.name.toLowerCase().includes(searchTerm.toLowerCase()))
+              .map(biz => (
+              <div key={biz.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-2xl">
+                <div className="flex-1 min-w-0 mr-4">
+                  <h4 className="font-bold text-gray-900 truncate">{biz.name}</h4>
+                  <p className="text-xs text-gray-500">{biz.isActive ? 'Ativo' : 'Bloqueado'}</p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <button 
+                    onClick={() => handleEditClick(biz)}
+                    className="p-2 bg-blue-100 text-blue-600 rounded-xl"
+                    title="Editar"
+                  >
+                    <Edit2 className="w-5 h-5" />
+                  </button>
+                  <button 
+                    onClick={() => handleToggleStatus(biz.id, biz.isActive)}
+                    className={cn(
+                      "p-2 rounded-xl transition-colors",
+                      biz.isActive ? "bg-orange-100 text-orange-600" : "bg-green-100 text-green-600"
+                    )}
+                    title={biz.isActive ? "Bloquear" : "Desbloquear"}
+                  >
+                    {biz.isActive ? <ShieldAlert className="w-5 h-5" /> : <ShieldCheck className="w-5 h-5" />}
+                  </button>
+                  <button 
+                    onClick={() => handleDelete(biz.id)}
+                    className="p-2 bg-red-100 text-red-600 rounded-xl"
+                    title="Excluir"
+                  >
+                    <Trash2 className="w-5 h-5" />
+                  </button>
+                </div>
+              </div>
+            ))}
+            {businesses.filter(biz => biz.name.toLowerCase().includes(searchTerm.toLowerCase())).length === 0 && (
+              <p className="text-center text-gray-400 text-sm py-4">Nenhuma empresa encontrada.</p>
+            )}
+          </div>
         </section>
 
         {/* Advertising Banners */}

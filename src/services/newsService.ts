@@ -25,7 +25,7 @@ export const fetchExternalNews = async (): Promise<News[]> => {
   }
 
   const ai = getAI();
-  if (!ai) return newsCache?.data || [];
+  if (!ai) return getFallbackNews();
 
   try {
     const response = await ai.models.generateContent({
@@ -57,12 +57,32 @@ export const fetchExternalNews = async (): Promise<News[]> => {
     // Update cache
     if (news.length > 0) {
       newsCache = { data: news, timestamp: Date.now() };
+      return news;
     }
     
-    return news;
+    return getFallbackNews();
   } catch (error) {
     console.error("Error fetching external news:", error);
     // Return stale cache if available on error
-    return newsCache?.data || [];
+    return newsCache?.data || getFallbackNews();
   }
+};
+
+const getFallbackNews = (): News[] => {
+  return [
+    {
+      id: 'f1',
+      title: 'Guia Cruz: O seu portal de informações locais',
+      content: 'Fique por dentro de tudo o que acontece na nossa cidade. Encontre empresas, serviços e as principais notícias em um só lugar.',
+      date: new Date().toLocaleDateString('pt-BR'),
+      photo: 'https://images.unsplash.com/photo-1504711434969-e33886168f5c?auto=format&fit=crop&w=800&q=80'
+    },
+    {
+      id: 'f2',
+      title: 'Novas empresas cadastradas no Guia',
+      content: 'Confira os novos estabelecimentos que acabaram de chegar ao nosso guia. Apoie o comércio local!',
+      date: new Date().toLocaleDateString('pt-BR'),
+      photo: 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?auto=format&fit=crop&w=800&q=80'
+    }
+  ];
 };
