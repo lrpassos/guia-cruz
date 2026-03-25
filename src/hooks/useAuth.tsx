@@ -53,8 +53,25 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, []);
 
   const login = async () => {
-    const provider = new GoogleAuthProvider();
-    await signInWithPopup(auth, provider);
+    try {
+      const provider = new GoogleAuthProvider();
+      // Use custom parameters to force account selection if needed
+      provider.setCustomParameters({ prompt: 'select_account' });
+      
+      console.log('Starting Google Login...');
+      const result = await signInWithPopup(auth, provider);
+      console.log('Login successful:', result.user.email);
+    } catch (error: any) {
+      console.error('Detailed Login Error:', error);
+      
+      if (error.code === 'auth/popup-blocked') {
+        alert('O popup de login foi bloqueado pelo seu navegador. Por favor, permita popups para este site.');
+      } else if (error.code === 'auth/unauthorized-domain') {
+        alert('Este domínio não está autorizado no Console do Firebase. Adicione ' + window.location.hostname + ' aos domínios autorizados.');
+      } else {
+        alert('Erro ao entrar com Google: ' + (error.message || 'Erro desconhecido'));
+      }
+    }
   };
 
   const logout = async () => {
