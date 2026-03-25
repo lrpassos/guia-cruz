@@ -1,13 +1,16 @@
-import { collection, addDoc, getDocs, query, limit } from 'firebase/firestore';
+import { collection, addDoc, getDocs, query, limit, doc, getDoc, setDoc } from 'firebase/firestore';
 import { db } from './firebase';
 
 export const seedDatabase = async () => {
-  const categoriesRef = collection(db, 'categories');
-  const catSnap = await getDocs(query(categoriesRef, limit(1)));
+  // Use a dedicated settings document to track if the database has been seeded
+  const seedRef = doc(db, 'settings', 'system');
+  const seedSnap = await getDoc(seedRef);
   
-  if (!catSnap.empty) return; // Already seeded
+  if (seedSnap.exists() && seedSnap.data().seeded) return;
 
   console.log('Seeding database...');
+
+  const categoriesRef = collection(db, 'categories');
 
   // Categories
   const categories = [
@@ -100,6 +103,9 @@ export const seedDatabase = async () => {
     photo: 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=800&q=80',
     date: new Date().toISOString()
   });
+
+  // Mark as seeded
+  await setDoc(doc(db, 'settings', 'system'), { seeded: true });
 
   console.log('Seeding complete!');
 };

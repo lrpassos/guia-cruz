@@ -563,47 +563,6 @@ export const AdminPage: React.FC = () => {
           </form>
         </section>
 
-        {/* Manage Businesses */}
-        <section className="bg-white rounded-3xl p-6 shadow-sm border border-gray-100">
-          <h2 className="text-lg font-bold text-gray-900 mb-6">Gerenciar Empresas</h2>
-          <div className="space-y-4">
-            {businesses.map(biz => (
-              <div key={biz.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-2xl">
-                <div className="flex-1 min-w-0 mr-4">
-                  <h4 className="font-bold text-gray-900 truncate">{biz.name}</h4>
-                  <p className="text-xs text-gray-500">{biz.isActive ? 'Ativo' : 'Bloqueado'}</p>
-                </div>
-                <div className="flex items-center gap-2">
-                  <button 
-                    onClick={() => handleEditClick(biz)}
-                    className="p-2 bg-blue-100 text-blue-600 rounded-xl"
-                    title="Editar"
-                  >
-                    <Edit2 className="w-5 h-5" />
-                  </button>
-                  <button 
-                    onClick={() => handleToggleStatus(biz.id, biz.isActive)}
-                    className={cn(
-                      "p-2 rounded-xl transition-colors",
-                      biz.isActive ? "bg-orange-100 text-orange-600" : "bg-green-100 text-green-600"
-                    )}
-                    title={biz.isActive ? "Bloquear" : "Desbloquear"}
-                  >
-                    {biz.isActive ? <ShieldAlert className="w-5 h-5" /> : <ShieldCheck className="w-5 h-5" />}
-                  </button>
-                  <button 
-                    onClick={() => handleDelete(biz.id)}
-                    className="p-2 bg-red-100 text-red-600 rounded-xl"
-                    title="Excluir"
-                  >
-                    <Trash2 className="w-5 h-5" />
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
-        </section>
-
         {/* Advertising Banners */}
         <section className="bg-white rounded-3xl p-6 shadow-sm border border-gray-100">
           <h2 className="text-lg font-bold text-gray-900 mb-6 flex items-center gap-2">

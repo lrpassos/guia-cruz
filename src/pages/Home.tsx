@@ -11,7 +11,7 @@ import { BusinessCard } from '../components/BusinessCard';
 import { CategoryIcon } from '../components/CategoryIcon';
 import { ChevronRight, Search, QrCode } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { motion } from 'motion/react';
+import { motion, AnimatePresence } from 'motion/react';
 
 export const Home: React.FC = () => {
   const [categories, setCategories] = useState<Category[]>([]);
@@ -20,6 +20,16 @@ export const Home: React.FC = () => {
   const [news, setNews] = useState<News[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadingNews, setLoadingNews] = useState(true);
+  const [currentBanner, setCurrentBanner] = useState(0);
+
+  useEffect(() => {
+    if (banners.length > 1) {
+      const timer = setInterval(() => {
+        setCurrentBanner((prev) => (prev + 1) % banners.length);
+      }, 5000);
+      return () => clearInterval(timer);
+    }
+  }, [banners]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -91,32 +101,55 @@ export const Home: React.FC = () => {
         </div>
       </section>
 
-      {/* Banners Slider (Simplified) */}
+      {/* Banners Carousel */}
       {loading ? (
         <section className="mt-8 px-4">
           <div className="aspect-[21/9] bg-gray-100 rounded-2xl animate-pulse shadow-sm" />
         </section>
       ) : banners.length > 0 && (
         <section className="mt-8 px-4">
-          <div className="overflow-hidden rounded-2xl aspect-[21/9] bg-gray-100 shadow-sm">
-            {banners[0].link ? (
-              <a href={banners[0].link} target="_blank" rel="noopener noreferrer">
-                <img 
-                  src={banners[0].imageUrl} 
-                  alt="Banner" 
-                  className="w-full h-full object-cover"
-                  referrerPolicy="no-referrer"
-                  loading="lazy"
-                />
-              </a>
-            ) : (
-              <img 
-                src={banners[0].imageUrl} 
-                alt="Banner" 
-                className="w-full h-full object-cover"
-                referrerPolicy="no-referrer"
-                loading="lazy"
-              />
+          <div className="relative overflow-hidden rounded-2xl aspect-[21/9] bg-gray-100 shadow-sm">
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={banners[currentBanner].id}
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+                transition={{ duration: 0.5 }}
+                className="absolute inset-0"
+              >
+                {banners[currentBanner].link ? (
+                  <a href={banners[currentBanner].link} target="_blank" rel="noopener noreferrer">
+                    <img 
+                      src={banners[currentBanner].imageUrl} 
+                      alt="Banner" 
+                      className="w-full h-full object-cover"
+                      referrerPolicy="no-referrer"
+                    />
+                  </a>
+                ) : (
+                  <img 
+                    src={banners[currentBanner].imageUrl} 
+                    alt="Banner" 
+                    className="w-full h-full object-cover"
+                    referrerPolicy="no-referrer"
+                  />
+                )}
+              </motion.div>
+            </AnimatePresence>
+            
+            {/* Dots Indicator */}
+            {banners.length > 1 && (
+              <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5 z-10">
+                {banners.map((_, idx) => (
+                  <div 
+                    key={idx}
+                    className={`w-1.5 h-1.5 rounded-full transition-all duration-300 ${
+                      idx === currentBanner ? 'bg-white w-4' : 'bg-white/50'
+                    }`}
+                  />
+                ))}
+              </div>
             )}
           </div>
         </section>
