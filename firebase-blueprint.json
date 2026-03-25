@@ -1,0 +1,135 @@
+{
+  "entities": {
+    "Category": {
+      "title": "Category",
+      "description": "Business categories like Restaurants, Services, etc.",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "icon": { "type": "string" },
+        "color": { "type": "string" },
+        "order": { "type": "number" }
+      },
+      "required": ["name", "icon"]
+    },
+    "Business": {
+      "title": "Business",
+      "description": "Local businesses and services.",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "description": { "type": "string" },
+        "categoryId": { "type": "string" },
+        "address": { "type": "string" },
+        "lat": { "type": "number" },
+        "lng": { "type": "number" },
+        "phone": { "type": "string" },
+        "whatsapp": { "type": "string" },
+        "telegram": { "type": "string" },
+        "photos": { "type": "array", "items": { "type": "string" } },
+        "rating": { "type": "number" },
+        "reviewCount": { "type": "number" },
+        "isFeatured": { "type": "boolean" },
+        "ownerUid": { "type": "string" }
+      },
+      "required": ["name", "categoryId", "address"]
+    },
+    "Review": {
+      "title": "Review",
+      "description": "User reviews for businesses.",
+      "type": "object",
+      "properties": {
+        "businessId": { "type": "string" },
+        "userId": { "type": "string" },
+        "userName": { "type": "string" },
+        "userPhoto": { "type": "string" },
+        "rating": { "type": "number" },
+        "comment": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["businessId", "userId", "rating"]
+    },
+    "Coupon": {
+      "title": "Coupon",
+      "description": "Promotional coupons from businesses.",
+      "type": "object",
+      "properties": {
+        "businessId": { "type": "string" },
+        "title": { "type": "string" },
+        "description": { "type": "string" },
+        "code": { "type": "string" },
+        "expiryDate": { "type": "string", "format": "date-time" }
+      },
+      "required": ["businessId", "title", "code"]
+    },
+    "News": {
+      "title": "News",
+      "description": "Local news and events.",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string" },
+        "content": { "type": "string" },
+        "photo": { "type": "string" },
+        "date": { "type": "string", "format": "date-time" }
+      },
+      "required": ["title", "content"]
+    },
+    "Banner": {
+      "title": "Banner",
+      "description": "Promotional banners for the home screen.",
+      "type": "object",
+      "properties": {
+        "imageUrl": { "type": "string" },
+        "link": { "type": "string" },
+        "active": { "type": "boolean" }
+      },
+      "required": ["imageUrl"]
+    },
+    "Notification": {
+      "title": "Notification",
+      "description": "Push-like notifications sent by admin.",
+      "type": "object",
+      "properties": {
+        "businessId": { "type": "string" },
+        "businessName": { "type": "string" },
+        "message": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["businessId", "message"]
+    },
+    "CheckIn": {
+      "title": "Check-in",
+      "description": "User check-ins at businesses.",
+      "type": "object",
+      "properties": {
+        "businessId": { "type": "string" },
+        "userId": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["businessId", "userId"]
+    },
+    "User": {
+      "title": "User",
+      "description": "App users and administrators.",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "email": { "type": "string" },
+        "role": { "type": "string", "enum": ["admin", "user"] },
+        "points": { "type": "number" }
+      },
+      "required": ["email"]
+    }
+  },
+  "firestore": {
+    "/categories/{categoryId}": { "schema": "Category", "description": "Business categories" },
+    "/businesses/{businessId}": { "schema": "Business", "description": "Local businesses" },
+    "/reviews/{reviewId}": { "schema": "Review", "description": "User reviews" },
+    "/coupons/{couponId}": { "schema": "Coupon", "description": "Discount coupons" },
+    "/news/{newsId}": { "schema": "News", "description": "Local news" },
+    "/banners/{bannerId}": { "schema": "Banner", "description": "Home banners" },
+    "/users/{userId}": { "schema": "User", "description": "User profiles" },
+    "/notifications/{notificationId}": { "schema": "Notification", "description": "Push notifications" },
+    "/checkins/{checkinId}": { "schema": "CheckIn", "description": "User check-ins" }
+  }
+}

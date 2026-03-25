@@ -1,0 +1,7 @@
+{
+  "name": "Guia Cruz",
+  "description": "Guia comercial completo para conectar usuários a empresas e serviços locais.",
+  "requestFramePermissions": [
+    "geolocation"
+  ]
+}
