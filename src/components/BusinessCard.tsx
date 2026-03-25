@@ -7,13 +7,16 @@ import { cn } from '../lib/utils';
 interface BusinessCardProps {
   business: Business;
   variant?: 'horizontal' | 'vertical';
+  to?: string;
 }
 
-export const BusinessCard: React.FC<BusinessCardProps> = React.memo(({ business, variant = 'vertical' }) => {
+export const BusinessCard: React.FC<BusinessCardProps> = React.memo(({ business, variant = 'vertical', to }) => {
+  const targetPath = to || `/business/${business.id}`;
+
   if (variant === 'horizontal') {
     return (
       <Link 
-        to={`/business/${business.id}`}
+        to={targetPath}
         className="flex gap-4 p-4 bg-white rounded-2xl border border-gray-100 hover:border-blue-100 transition-all active:scale-[0.98]"
       >
         <div className="w-24 h-24 rounded-xl overflow-hidden bg-gray-100 flex-shrink-0">
@@ -45,7 +48,7 @@ export const BusinessCard: React.FC<BusinessCardProps> = React.memo(({ business,
 
   return (
     <Link 
-      to={`/business/${business.id}`}
+      to={targetPath}
       className="block w-48 flex-shrink-0 bg-white rounded-2xl border border-gray-100 overflow-hidden hover:border-blue-100 transition-all active:scale-[0.98]"
     >
       <div className="h-32 bg-gray-100 relative">

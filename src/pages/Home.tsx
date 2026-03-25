@@ -199,7 +199,13 @@ export const Home: React.FC = () => {
         ) : (
           <div className="space-y-4">
             {news.map((item, idx) => (
-              <Link key={idx} to="/news" className="flex gap-4 bg-white p-3 rounded-2xl border border-gray-50 shadow-sm active:scale-[0.98] transition-all">
+              <a 
+                key={idx} 
+                href={item.link || '#'} 
+                target={item.link ? "_blank" : "_self"}
+                rel="noopener noreferrer"
+                className="flex gap-4 bg-white p-3 rounded-2xl border border-gray-50 shadow-sm active:scale-[0.98] transition-all"
+              >
                 {item.photo && (
                   <div className="w-20 h-20 rounded-xl overflow-hidden flex-shrink-0 bg-gray-100">
                     <img src={item.photo} alt={item.title} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
@@ -210,7 +216,7 @@ export const Home: React.FC = () => {
                   <p className="text-xs text-gray-500 mt-1 line-clamp-2">{item.content}</p>
                   <span className="text-[10px] text-gray-400 mt-2 block font-medium">{item.date}</span>
                 </div>
-              </Link>
+              </a>
             ))}
           </div>
         )}

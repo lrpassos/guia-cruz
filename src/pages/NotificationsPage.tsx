@@ -34,25 +34,27 @@ export const NotificationsPage: React.FC = () => {
             {news.map((item) => (
               <div key={item.id} className="bg-white rounded-3xl overflow-hidden shadow-sm border border-gray-100 flex flex-col">
                 {item.photo && (
-                  <div className="aspect-video w-full bg-gray-100">
+                  <a href={item.link || '#'} target="_blank" rel="noopener noreferrer" className="aspect-video w-full bg-gray-100 block">
                     <img 
                       src={item.photo} 
                       alt={item.title} 
                       className="w-full h-full object-cover"
                       referrerPolicy="no-referrer"
                     />
-                  </div>
+                  </a>
                 )}
                 <div className="p-5">
                   <div className="flex items-center gap-2 text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-2">
                     <Calendar className="w-3 h-3" /> {item.date}
                   </div>
-                  <h3 className="text-lg font-bold text-gray-900 leading-tight mb-3">{item.title}</h3>
+                  <a href={item.link || '#'} target="_blank" rel="noopener noreferrer" className="block hover:text-blue-600 transition-colors">
+                    <h3 className="text-lg font-bold text-gray-900 leading-tight mb-3">{item.title}</h3>
+                  </a>
                   <p className="text-gray-600 text-sm leading-relaxed mb-4 line-clamp-3">{item.content}</p>
                   
-                  {(item as any).link && (
+                  {item.link && (
                     <a 
-                      href={(item as any).link} 
+                      href={item.link} 
                       target="_blank" 
                       rel="noopener noreferrer"
                       className="inline-flex items-center gap-2 text-blue-600 text-sm font-bold hover:underline"

@@ -17,7 +17,7 @@ import {
   deleteBanner
 } from '../services/firestore';
 import { Category, Business, Banner } from '../types';
-import { Plus, Send, Building, Bell, CheckCircle, Trash2, ShieldAlert, ShieldCheck, Grid, Image as ImageIcon, Edit2, X, MapPin, Upload, Settings, Eraser, Search } from 'lucide-react';
+import { Plus, Send, Building, Bell, CheckCircle, Trash2, ShieldAlert, ShieldCheck, Grid, Image as ImageIcon, Edit2, X, MapPin, Upload, Eraser, Search } from 'lucide-react';
 
 export const AdminPage: React.FC = () => {
   const { isAdmin, loading: authLoading } = useAuth();
@@ -267,39 +267,6 @@ export const AdminPage: React.FC = () => {
     }
   };
 
-  const handleSeedCategories = async () => {
-    if (!window.confirm('Deseja criar as categorias padrão (Supermercados, Restaurantes, etc)?')) return;
-    
-    const defaultCategories = [
-      { name: 'Supermercados', icon: 'ShoppingCart', iconUrl: 'https://cdn-icons-png.flaticon.com/512/3081/3081840.png', order: 1 },
-      { name: 'Restaurantes', icon: 'Utensils', iconUrl: 'https://cdn-icons-png.flaticon.com/512/3448/3448609.png', order: 2 },
-      { name: 'Saúde', icon: 'HeartPulse', iconUrl: 'https://cdn-icons-png.flaticon.com/512/2966/2966327.png', order: 3 },
-      { name: 'Serviços', icon: 'Wrench', iconUrl: 'https://cdn-icons-png.flaticon.com/512/1066/1066371.png', order: 4 },
-      { name: 'Material de Construção', icon: 'HardHat', iconUrl: 'https://cdn-icons-png.flaticon.com/512/4333/4333639.png', order: 5 },
-      { name: 'Mecânicos', icon: 'Settings', iconUrl: 'https://cdn-icons-png.flaticon.com/512/1995/1995470.png', order: 6 },
-      { name: 'Moto Táxi', icon: 'Bike', iconUrl: 'https://cdn-icons-png.flaticon.com/512/3198/3198336.png', order: 7 },
-      { name: 'Táxi', icon: 'Car', iconUrl: 'https://cdn-icons-png.flaticon.com/512/3448/3448636.png', order: 8 },
-    ];
-
-    try {
-      setLoading(true);
-      for (const cat of defaultCategories) {
-        // Check if category already exists to avoid duplicates
-        const exists = categories.some(c => c.name.toLowerCase() === cat.name.toLowerCase());
-        if (!exists) {
-          await addCategory(cat);
-        }
-      }
-      setSuccess('Categorias padrão configuradas!');
-      fetchData();
-      setTimeout(() => setSuccess(null), 3000);
-    } catch (error) {
-      console.error('Error seeding categories:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const handleDeleteCategory = async (id: string) => {
     if (!window.confirm('Tem certeza que deseja excluir esta categoria?')) return;
     try {
@@ -391,12 +358,6 @@ export const AdminPage: React.FC = () => {
                 title="Remover Nomes Repetidos"
               >
                 <Eraser className="w-3 h-3" /> Limpar Repetidos
-              </button>
-              <button 
-                onClick={handleSeedCategories}
-                className="text-xs font-bold text-purple-600 flex items-center gap-1 bg-purple-50 px-3 py-2 rounded-xl active:scale-95 transition-all"
-              >
-                <Settings className="w-3 h-3" /> Configuração Rápida
               </button>
             </div>
           </div>

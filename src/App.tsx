@@ -10,6 +10,7 @@ const BusinessPage = lazy(() => import('./pages/BusinessPage').then(m => ({ defa
 const SearchPage = lazy(() => import('./pages/SearchPage').then(m => ({ default: m.SearchPage })));
 const ProfilePage = lazy(() => import('./pages/ProfilePage').then(m => ({ default: m.ProfilePage })));
 const AdminPage = lazy(() => import('./pages/AdminPage').then(m => ({ default: m.AdminPage })));
+const EditBusinessPage = lazy(() => import('./pages/EditBusinessPage').then(m => ({ default: m.EditBusinessPage })));
 const NotificationsPage = lazy(() => import('./pages/NotificationsPage').then(m => ({ default: m.NotificationsPage })));
 const ScannerPage = lazy(() => import('./pages/ScannerPage').then(m => ({ default: m.ScannerPage })));
 
@@ -36,6 +37,7 @@ export default function App() {
             <Route path="/search" element={<SearchPage />} />
             <Route path="/profile" element={<ProfilePage />} />
             <Route path="/admin" element={<AdminPage />} />
+            <Route path="/admin/edit-business/:id" element={<EditBusinessPage />} />
             <Route path="/scan" element={<ScannerPage />} />
             <Route path="/news" element={<NotificationsPage />} />
             <Route path="*" element={<Home />} />

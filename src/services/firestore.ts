@@ -14,8 +14,9 @@ import {
   Timestamp,
   serverTimestamp
 } from 'firebase/firestore';
-import { db } from '../lib/firebase';
+import { db, auth } from '../lib/firebase';
 import { Category, Business, Review, Coupon, News, Banner, CheckIn, Notification as AppNotification } from '../types';
+import { handleFirestoreError, OperationType } from '../lib/firestore-errors';
 
 // Simple in-memory cache
 const cache: { [key: string]: { data: any, timestamp: number } } = {};
@@ -39,89 +40,145 @@ export const getCategories = async (): Promise<Category[]> => {
   const cached = getCachedData(cacheKey);
   if (cached) return cached;
 
-  const q = query(collection(db, 'categories'), orderBy('order', 'asc'));
-  const snapshot = await getDocs(q);
-  const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Category));
-  setCachedData(cacheKey, data);
-  return data;
+  const path = 'categories';
+  try {
+    const q = query(collection(db, path), orderBy('order', 'asc'));
+    const snapshot = await getDocs(q);
+    const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Category));
+    setCachedData(cacheKey, data);
+    return data;
+  } catch (error) {
+    handleFirestoreError(error, OperationType.LIST, path);
+    return [];
+  }
 };
 
 export const addBusiness = async (business: Omit<Business, 'id' | 'rating' | 'reviewCount' | 'isActive'>) => {
-  return addDoc(collection(db, 'businesses'), {
-    ...business,
-    rating: 0,
-    reviewCount: 0,
-    isFeatured: false,
-    isActive: true
-  });
+  const path = 'businesses';
+  try {
+    return await addDoc(collection(db, path), {
+      ...business,
+      rating: 0,
+      reviewCount: 0,
+      isFeatured: false,
+      isActive: true
+    });
+  } catch (error) {
+    handleFirestoreError(error, OperationType.CREATE, path);
+  }
 };
 
 export const updateBusinessStatus = async (id: string, isActive: boolean) => {
-  const docRef = doc(db, 'businesses', id);
-  return updateDoc(docRef, { isActive });
+  const path = `businesses/${id}`;
+  try {
+    const docRef = doc(db, 'businesses', id);
+    return await updateDoc(docRef, { isActive });
+  } catch (error) {
+    handleFirestoreError(error, OperationType.UPDATE, path);
+  }
 };
 
 export const updateBusiness = async (id: string, business: Partial<Business>) => {
-  const docRef = doc(db, 'businesses', id);
-  return updateDoc(docRef, business);
+  const path = `businesses/${id}`;
+  try {
+    const docRef = doc(db, 'businesses', id);
+    return await updateDoc(docRef, business);
+  } catch (error) {
+    handleFirestoreError(error, OperationType.UPDATE, path);
+  }
 };
 
 export const deleteBusiness = async (id: string) => {
-  const docRef = doc(db, 'businesses', id);
-  return deleteDoc(docRef);
+  const path = `businesses/${id}`;
+  try {
+    const docRef = doc(db, 'businesses', id);
+    return await deleteDoc(docRef);
+  } catch (error) {
+    handleFirestoreError(error, OperationType.DELETE, path);
+  }
 };
 
 export const addCategory = async (category: Omit<Category, 'id'>) => {
-  return addDoc(collection(db, 'categories'), {
-    ...category,
-    order: category.order || 0
-  });
+  const path = 'categories';
+  try {
+    return await addDoc(collection(db, path), {
+      ...category,
+      order: category.order || 0
+    });
+  } catch (error) {
+    handleFirestoreError(error, OperationType.CREATE, path);
+  }
 };
 
 export const deleteCategory = async (id: string) => {
-  const docRef = doc(db, 'categories', id);
-  return deleteDoc(docRef);
+  const path = `categories/${id}`;
+  try {
+    const docRef = doc(db, 'categories', id);
+    return await deleteDoc(docRef);
+  } catch (error) {
+    handleFirestoreError(error, OperationType.DELETE, path);
+  }
 };
 
 // Check-ins
 export const addCheckIn = async (businessId: string, userId: string) => {
-  const checkin = {
-    businessId,
-    userId,
-    createdAt: new Date().toISOString()
-  };
-  await addDoc(collection(db, 'checkins'), checkin);
-  
-  // Increment user points
-  const userRef = doc(db, 'users', userId);
-  const userSnap = await getDoc(userRef);
-  if (userSnap.exists()) {
-    const userData = userSnap.data();
-    await updateDoc(userRef, {
-      points: (userData.points || 0) + 10
-    });
+  const path = 'checkins';
+  try {
+    const checkin = {
+      businessId,
+      userId,
+      createdAt: new Date().toISOString()
+    };
+    await addDoc(collection(db, path), checkin);
+    
+    // Increment user points
+    const userPath = `users/${userId}`;
+    const userRef = doc(db, 'users', userId);
+    const userSnap = await getDoc(userRef);
+    if (userSnap.exists()) {
+      const userData = userSnap.data();
+      await updateDoc(userRef, {
+        points: (userData.points || 0) + 10
+      });
+    }
+  } catch (error) {
+    handleFirestoreError(error, OperationType.WRITE, path);
   }
 };
 
 export const getUserCheckIns = async (userId: string): Promise<CheckIn[]> => {
-  const q = query(collection(db, 'checkins'), where('userId', '==', userId), orderBy('createdAt', 'desc'));
-  const snapshot = await getDocs(q);
-  return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as CheckIn));
+  const path = 'checkins';
+  try {
+    const q = query(collection(db, path), where('userId', '==', userId), orderBy('createdAt', 'desc'));
+    const snapshot = await getDocs(q);
+    return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as CheckIn));
+  } catch (error) {
+    handleFirestoreError(error, OperationType.LIST, path);
+    return [];
+  }
 };
 
 // Notifications (Push simulation)
 export const sendNotification = async (notification: Omit<AppNotification, 'id' | 'createdAt'>) => {
-  return addDoc(collection(db, 'notifications'), {
-    ...notification,
-    createdAt: new Date().toISOString()
-  });
+  const path = 'notifications';
+  try {
+    return await addDoc(collection(db, path), {
+      ...notification,
+      createdAt: new Date().toISOString()
+    });
+  } catch (error) {
+    handleFirestoreError(error, OperationType.CREATE, path);
+  }
 };
 
 export const getNotifications = (callback: (notifications: AppNotification[]) => void) => {
-  const q = query(collection(db, 'notifications'), orderBy('createdAt', 'desc'), limit(20));
+  const path = 'notifications';
+  const q = query(collection(db, path), orderBy('createdAt', 'desc'), limit(20));
   return onSnapshot(q, (snapshot) => {
     const notifications = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as AppNotification));
     callback(notifications);
+  }, (error) => {
+    handleFirestoreError(error, OperationType.LIST, path);
   });
 };
 
@@ -131,67 +188,105 @@ export const getFeaturedBusinesses = async (count: number = 5): Promise<Business
   const cached = getCachedData(cacheKey);
   if (cached) return cached;
 
-  const q = query(
-    collection(db, 'businesses'), 
-    where('isFeatured', '==', true), 
-    where('isActive', '==', true),
-    limit(count)
-  );
-  const snapshot = await getDocs(q);
-  const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Business));
-  setCachedData(cacheKey, data);
-  return data;
+  const path = 'businesses';
+  try {
+    const q = query(
+      collection(db, path), 
+      where('isFeatured', '==', true), 
+      where('isActive', '==', true),
+      limit(count)
+    );
+    const snapshot = await getDocs(q);
+    const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Business));
+    setCachedData(cacheKey, data);
+    return data;
+  } catch (error) {
+    handleFirestoreError(error, OperationType.LIST, path);
+    return [];
+  }
 };
 
 export const getBusinessesByCategory = async (categoryId: string): Promise<Business[]> => {
-  const q = query(
-    collection(db, 'businesses'), 
-    where('categoryId', '==', categoryId),
-    where('isActive', '==', true),
-    orderBy('name', 'asc')
-  );
-  const snapshot = await getDocs(q);
-  return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Business));
+  const path = 'businesses';
+  try {
+    const q = query(
+      collection(db, path), 
+      where('categoryId', '==', categoryId),
+      where('isActive', '==', true),
+      orderBy('name', 'asc')
+    );
+    const snapshot = await getDocs(q);
+    return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Business));
+  } catch (error) {
+    handleFirestoreError(error, OperationType.LIST, path);
+    return [];
+  }
 };
 
 export const getBusinessById = async (id: string): Promise<Business | null> => {
-  const docRef = doc(db, 'businesses', id);
-  const docSnap = await getDoc(docRef);
-  return docSnap.exists() ? ({ id: docSnap.id, ...docSnap.data() } as Business) : null;
+  const path = `businesses/${id}`;
+  try {
+    const docRef = doc(db, 'businesses', id);
+    const docSnap = await getDoc(docRef);
+    return docSnap.exists() ? ({ id: docSnap.id, ...docSnap.data() } as Business) : null;
+  } catch (error) {
+    handleFirestoreError(error, OperationType.GET, path);
+    return null;
+  }
 };
 
 // Reviews
 export const getReviewsByBusiness = (businessId: string, callback: (reviews: Review[]) => void) => {
+  const path = 'reviews';
   const q = query(
-    collection(db, 'reviews'), 
+    collection(db, path), 
     where('businessId', '==', businessId),
     orderBy('createdAt', 'desc')
   );
   return onSnapshot(q, (snapshot) => {
     const reviews = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Review));
     callback(reviews);
+  }, (error) => {
+    handleFirestoreError(error, OperationType.LIST, path);
   });
 };
 
 export const addReview = async (review: Omit<Review, 'id' | 'createdAt'>) => {
-  return addDoc(collection(db, 'reviews'), {
-    ...review,
-    createdAt: new Date().toISOString()
-  });
+  const path = 'reviews';
+  try {
+    return await addDoc(collection(db, path), {
+      ...review,
+      createdAt: new Date().toISOString()
+    });
+  } catch (error) {
+    handleFirestoreError(error, OperationType.CREATE, path);
+  }
 };
 
 // Coupons
 export const getCouponsByBusiness = async (businessId: string): Promise<Coupon[]> => {
-  const q = query(collection(db, 'coupons'), where('businessId', '==', businessId));
-  const snapshot = await getDocs(q);
-  return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Coupon));
+  const path = 'coupons';
+  try {
+    const q = query(collection(db, path), where('businessId', '==', businessId));
+    const snapshot = await getDocs(q);
+    return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Coupon));
+  } catch (error) {
+    handleFirestoreError(error, OperationType.LIST, path);
+    return [];
+  }
 };
 
 // News
 export const getLatestNews = async (count: number = 10): Promise<News[]> => {
-  const q = query(collection(db, 'news'), orderBy('date', 'desc'), limit(count));
-  const snapshot = await getDocs(q);
-  return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as News));
+  const path = 'news';
+  try {
+    const q = query(collection(db, path), orderBy('date', 'desc'), limit(count));
+    const snapshot = await getDocs(q);
+    return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as News));
+  } catch (error) {
+    handleFirestoreError(error, OperationType.LIST, path);
+    return [];
+  }
 };
 
 // Banners
@@ -200,29 +295,56 @@ export const getActiveBanners = async (): Promise<Banner[]> => {
   const cached = getCachedData(cacheKey);
   if (cached) return cached;
 
-  const q = query(collection(db, 'banners'), where('active', '==', true));
-  const snapshot = await getDocs(q);
-  const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Banner));
-  setCachedData(cacheKey, data);
-  return data;
+  const path = 'banners';
+  try {
+    const q = query(collection(db, path), where('active', '==', true));
+    const snapshot = await getDocs(q);
+    const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Banner));
+    setCachedData(cacheKey, data);
+    return data;
+  } catch (error) {
+    handleFirestoreError(error, OperationType.LIST, path);
+    return [];
+  }
 };
 
 export const getAllBanners = async (): Promise<Banner[]> => {
-  const q = query(collection(db, 'banners'));
-  const snapshot = await getDocs(q);
-  return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Banner));
+  const path = 'banners';
+  try {
+    const q = query(collection(db, path));
+    const snapshot = await getDocs(q);
+    return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Banner));
+  } catch (error) {
+    handleFirestoreError(error, OperationType.LIST, path);
+    return [];
+  }
 };
 
 export const addBanner = async (banner: Omit<Banner, 'id'>) => {
-  return addDoc(collection(db, 'banners'), banner);
+  const path = 'banners';
+  try {
+    return await addDoc(collection(db, path), banner);
+  } catch (error) {
+    handleFirestoreError(error, OperationType.CREATE, path);
+  }
 };
 
 export const updateBannerStatus = async (id: string, active: boolean) => {
-  const docRef = doc(db, 'banners', id);
-  return updateDoc(docRef, { active });
+  const path = `banners/${id}`;
+  try {
+    const docRef = doc(db, 'banners', id);
+    return await updateDoc(docRef, { active });
+  } catch (error) {
+    handleFirestoreError(error, OperationType.UPDATE, path);
+  }
 };
 
 export const deleteBanner = async (id: string) => {
-  const docRef = doc(db, 'banners', id);
-  return deleteDoc(docRef);
+  const path = `banners/${id}`;
+  try {
+    const docRef = doc(db, 'banners', id);
+    return await deleteDoc(docRef);
+  } catch (error) {
+    handleFirestoreError(error, OperationType.DELETE, path);
+  }
 };

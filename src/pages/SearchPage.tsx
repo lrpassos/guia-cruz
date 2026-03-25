@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { collection, query, where, getDocs, orderBy } from 'firebase/firestore';
+import { collection, query, orderBy, getDocs } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import { Business } from '../types';
 import { Layout } from '../components/Layout';
 import { BusinessCard } from '../components/BusinessCard';
 import { Search as SearchIcon, X } from 'lucide-react';
+import { useAuth } from '../hooks/useAuth';
 
 export const SearchPage: React.FC = () => {
+  const { isAdmin } = useAuth();
   const [searchTerm, setSearchTerm] = useState('');
   const [results, setResults] = useState<Business[]>([]);
   const [loading, setLoading] = useState(false);
@@ -76,7 +78,12 @@ export const SearchPage: React.FC = () => {
         ) : (
           <>
             {results.map(biz => (
-              <BusinessCard key={biz.id} business={biz} variant="horizontal" />
+              <BusinessCard 
+                key={biz.id} 
+                business={biz} 
+                variant="horizontal" 
+                to={isAdmin ? `/admin/edit-business/${biz.id}` : undefined}
+              />
             ))}
             {searchTerm.length >= 2 && results.length === 0 && (
               <div className="text-center py-20 text-gray-400">

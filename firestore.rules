@@ -5,12 +5,48 @@ service cloud.firestore {
     // Assumed Data Model
     // ===============================================================
     // Collection: categories
+    //   - name: string (required)
+    //   - icon: string (required)
+    //   - color: string
+    //   - order: number
+    //
     // Collection: businesses
+    //   - name: string (required)
+    //   - categoryId: string (required)
+    //   - address: string (required)
+    //   - isActive: boolean
+    //   - isFeatured: boolean
+    //   - rating: number
+    //   - reviewCount: number
+    //
     // Collection: reviews
+    //   - businessId: string (required)
+    //   - userId: string (required)
+    //   - rating: number (1-5)
+    //   - comment: string
+    //   - createdAt: string (ISO)
+    //
     // Collection: coupons
+    //   - businessId: string (required)
+    //   - title: string (required)
+    //   - code: string (required)
+    //
     // Collection: news
+    //   - title: string (required)
+    //   - content: string (required)
+    //   - date: string (ISO)
+    //
     // Collection: banners
+    //   - imageUrl: string (required)
+    //   - active: boolean
+    //
     // Collection: users
+    //   - email: string (required)
+    //   - role: string (admin|user)
+    //   - points: number
+    //
+    // Collection: settings
+    //   - seeded: boolean
     // ===============================================================
 
     // Helper Functions
@@ -20,8 +56,11 @@ service cloud.firestore {
 
     function isAdmin() {
       return isAuthenticated() && 
-        (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin' || 
-         (request.auth.token.email == "luiz.rogerios@gmail.com" && request.auth.token.email_verified == true));
+        (
+          (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
+           get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin') || 
+          (request.auth.token.email == "luiz.rogerios@gmail.com" && request.auth.token.email_verified == true)
+        );
     }
 
     function isOwner(userId) {
@@ -30,21 +69,34 @@ service cloud.firestore {
 
     // Validation Functions
     function isValidCategory(data) {
-      return data.name is string && data.name.size() > 0 && data.name.size() < 100;
+      return data.name is string && data.name.size() > 0 && data.name.size() < 100 &&
+             data.icon is string && data.icon.size() > 0;
     }
 
     function isValidBusiness(data) {
       return data.name is string && data.name.size() > 0 && data.name.size() < 200 &&
              data.categoryId is string &&
-             data.address is string;
+             data.address is string && data.address.size() > 0;
     }
 
     function isValidReview(data) {
-      return data.rating is number && data.rating >= 1 && data.rating <= 5 &&
-             data.comment is string && data.comment.size() < 1000;
+      return data.businessId is string &&
+             data.userId is string &&
+             data.rating is number && data.rating >= 1 && data.rating <= 5 &&
+             data.comment is string && data.comment.size() < 2000;
+    }
+
+    function isValidUser(data) {
+      return data.email is string && 
+             (data.role == 'admin' || data.role == 'user');
     }
 
     // Rules
+    match /settings/{settingId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
     match /categories/{categoryId} {
       allow read: if true;
       allow write: if isAdmin();
@@ -88,8 +140,11 @@ service cloud.firestore {
 
     match /users/{userId} {
       allow read: if isAuthenticated() && (isOwner(userId) || isAdmin());
-      allow create: if isAuthenticated() && isOwner(userId);
-      allow update: if isAuthenticated() && (isOwner(userId) && request.resource.data.role == resource.data.role || isAdmin());
+      allow create: if isAuthenticated() && isOwner(userId) && isValidUser(request.resource.data) && request.resource.data.role == 'user';
+      allow update: if isAuthenticated() && (
+        (isOwner(userId) && request.resource.data.role == resource.data.role && isValidUser(request.resource.data)) || 
+        isAdmin()
+      );
     }
   }
 }
